@@ -1,6 +1,6 @@
 /**
  * AutoContinue Options Page Script
- * 
+ *
  * Handles the options page functionality and settings management
  */
 
@@ -36,10 +36,14 @@ class OptionsController {
 
   private initializeElements(): void {
     this.enabledToggle = document.getElementById('enabled') as HTMLInputElement;
-    this.showNotificationsToggle = document.getElementById('show-notifications') as HTMLInputElement;
+    this.showNotificationsToggle = document.getElementById(
+      'show-notifications'
+    ) as HTMLInputElement;
     this.idleTimeoutInput = document.getElementById('idle-timeout') as HTMLInputElement;
     this.autoClickDelayInput = document.getElementById('auto-click-delay') as HTMLInputElement;
-    this.enableYouTubeMusicToggle = document.getElementById('enable-youtube-music') as HTMLInputElement;
+    this.enableYouTubeMusicToggle = document.getElementById(
+      'enable-youtube-music'
+    ) as HTMLInputElement;
     this.totalContinues = document.getElementById('total-continues') as HTMLElement;
     this.totalTimeSaved = document.getElementById('total-time-saved') as HTMLElement;
     this.lastReset = document.getElementById('last-reset') as HTMLElement;
@@ -58,7 +62,7 @@ class OptionsController {
         'lastReset',
         'idleTimeout',
         'autoClickDelay',
-        'enableYouTubeMusic'
+        'enableYouTubeMusic',
       ]);
 
       const settings: AutoContinueSettings = {
@@ -69,7 +73,7 @@ class OptionsController {
         lastReset: result.lastReset || Date.now(),
         idleTimeout: result.idleTimeout || 5,
         autoClickDelay: result.autoClickDelay || 100,
-        enableYouTubeMusic: result.enableYouTubeMusic !== false
+        enableYouTubeMusic: result.enableYouTubeMusic !== false,
       };
 
       this.updateUI(settings);
@@ -154,7 +158,7 @@ class OptionsController {
         await chrome.storage.local.set({
           autoContinueCount: 0,
           timeSaved: 0,
-          lastReset: Date.now()
+          lastReset: Date.now(),
         });
         await this.loadSettings();
       }
@@ -168,17 +172,17 @@ class OptionsController {
           'showNotifications',
           'autoContinueCount',
           'timeSaved',
-          'lastReset'
+          'lastReset',
         ]);
 
         const exportData = {
           ...result,
           exportDate: new Date().toISOString(),
-          version: chrome.runtime.getManifest().version
+          version: chrome.runtime.getManifest().version,
         };
 
         const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-          type: 'application/json'
+          type: 'application/json',
         });
 
         const url = URL.createObjectURL(blob);

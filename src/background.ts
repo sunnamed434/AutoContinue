@@ -1,11 +1,11 @@
 /**
  * AutoContinue Background Script
- * 
+ *
  * Handles extension lifecycle, storage management, and communication
  */
 
 // Extension installation and updates
-chrome.runtime.onInstalled.addListener((details) => {
+chrome.runtime.onInstalled.addListener(details => {
   console.log('[AutoContinue] Extension installed/updated:', details.reason);
 
   if (details.reason === 'install') {
@@ -15,7 +15,7 @@ chrome.runtime.onInstalled.addListener((details) => {
       showNotifications: false,
       autoContinueCount: 0,
       timeSaved: 0,
-      lastReset: Date.now()
+      lastReset: Date.now(),
     });
 
     // Open options page on first install
@@ -53,12 +53,15 @@ async function handleToggleMessage(enabled: boolean): Promise<void> {
 }
 
 // Handle statistics updates
-async function handleStatsUpdate(stats: { autoContinueCount: number; timeSaved: number }): Promise<void> {
+async function handleStatsUpdate(stats: {
+  autoContinueCount: number;
+  timeSaved: number;
+}): Promise<void> {
   try {
     await chrome.storage.local.set({
       autoContinueCount: stats.autoContinueCount,
       timeSaved: stats.timeSaved,
-      lastReset: Date.now()
+      lastReset: Date.now(),
     });
     console.log('[AutoContinue] Statistics updated:', stats);
   } catch (error) {
@@ -74,7 +77,7 @@ async function handleGetSettings(sendResponse: (response: any) => void): Promise
       'showNotifications',
       'autoContinueCount',
       'timeSaved',
-      'lastReset'
+      'lastReset',
     ]);
     sendResponse(result);
   } catch (error) {
@@ -87,7 +90,7 @@ async function handleGetSettings(sendResponse: (response: any) => void): Promise
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete' && tab.url) {
     const isYouTube = tab.url.includes('youtube.com') || tab.url.includes('music.youtube.com');
-    
+
     if (isYouTube) {
       // Content script will be injected automatically via manifest
       console.log('[AutoContinue] YouTube page loaded:', tab.url);
@@ -96,7 +99,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 });
 
 // Handle extension icon click
-chrome.action.onClicked.addListener((tab) => {
+chrome.action.onClicked.addListener(tab => {
   // This will open the popup automatically due to manifest configuration
   console.log('[AutoContinue] Extension icon clicked');
 });
@@ -104,7 +107,7 @@ chrome.action.onClicked.addListener((tab) => {
 // Periodic cleanup (run once per day)
 chrome.alarms.create('dailyCleanup', { periodInMinutes: 24 * 60 });
 
-chrome.alarms.onAlarm.addListener((alarm) => {
+chrome.alarms.onAlarm.addListener(alarm => {
   if (alarm.name === 'dailyCleanup') {
     performDailyCleanup();
   }

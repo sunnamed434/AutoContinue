@@ -2,7 +2,7 @@ console.log('[AutoContinue] Simple autoconfirm script loaded');
 
 let lastInteractionTime = Date.now();
 let isIdle = false;
-let isEnabled = true;
+const isEnabled = true;
 
 function isUserIdle(): boolean {
   return Date.now() - lastInteractionTime > 5000;
@@ -24,9 +24,9 @@ function autoClickContinue(): boolean {
     'yt-confirm-dialog-renderer button',
     'ytmusic-you-there-renderer button',
     '[role="button"][aria-label*="Continue"]',
-    '[role="button"][aria-label*="continue"]'
+    '[role="button"][aria-label*="continue"]',
   ];
-  
+
   for (const selector of selectors) {
     const button = document.querySelector(selector) as HTMLButtonElement;
     if (button && button.offsetParent !== null && !button.disabled) {
@@ -35,7 +35,7 @@ function autoClickContinue(): boolean {
       return true;
     }
   }
-  
+
   console.log('[AutoContinue] Continue button not found');
   return false;
 }
@@ -43,9 +43,13 @@ function autoClickContinue(): boolean {
 function listenForPopupEvent(): void {
   document.addEventListener('yt-popup-opened', (event: any) => {
     const detail = event.detail;
-    if (detail && (detail.nodeName === 'YT-CONFIRM-DIALOG-RENDERER' || detail.nodeName === 'YTMUSIC-YOU-THERE-RENDERER')) {
+    if (
+      detail &&
+      (detail.nodeName === 'YT-CONFIRM-DIALOG-RENDERER' ||
+        detail.nodeName === 'YTMUSIC-YOU-THERE-RENDERER')
+    ) {
       console.log('[AutoContinue] Continue watching popup detected');
-      
+
       if (isEnabled && isUserIdle()) {
         setTimeout(() => {
           autoClickContinue();
@@ -63,20 +67,21 @@ function setupInteractionListeners(): void {
 }
 
 function setupMutationObserver(): void {
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
+  const observer = new MutationObserver(mutations => {
+    mutations.forEach(mutation => {
       if (mutation.type === 'childList') {
-        mutation.addedNodes.forEach((node) => {
+        mutation.addedNodes.forEach(node => {
           if (node.nodeType === Node.ELEMENT_NODE) {
             const element = node as Element;
-            if (element.matches && (
-              element.matches('yt-confirm-dialog-renderer') ||
-              element.matches('ytmusic-you-there-renderer') ||
-              element.querySelector('yt-confirm-dialog-renderer') ||
-              element.querySelector('ytmusic-you-there-renderer')
-            )) {
+            if (
+              element.matches &&
+              (element.matches('yt-confirm-dialog-renderer') ||
+                element.matches('ytmusic-you-there-renderer') ||
+                element.querySelector('yt-confirm-dialog-renderer') ||
+                element.querySelector('ytmusic-you-there-renderer'))
+            ) {
               console.log('[AutoContinue] Popup detected via mutation observer');
-              
+
               if (isEnabled && isUserIdle()) {
                 setTimeout(() => {
                   autoClickContinue();
@@ -88,20 +93,20 @@ function setupMutationObserver(): void {
       }
     });
   });
-  
+
   observer.observe(document.body, {
     childList: true,
-    subtree: true
+    subtree: true,
   });
 }
 
 function init(): void {
   console.log('[AutoContinue] Initializing simple version');
-  
+
   setupInteractionListeners();
   listenForPopupEvent();
   setupMutationObserver();
-  
+
   console.log('[AutoContinue] Simple version initialized');
 }
 

@@ -1,4 +1,3 @@
-
 console.log(`[AutoContinue v${chrome.runtime.getManifest().version}] Content script loaded`);
 console.log('[AutoContinue] Content script is ready to receive messages');
 
@@ -27,7 +26,7 @@ function injectAutoconfirmScript(): void {
     script.onerror = function (): void {
       console.error('[AutoContinue] Failed to load autoconfirm script');
     };
-    
+
     (document.head || document.documentElement).appendChild(script);
   } catch (error) {
     if (error.message && error.message.includes('Extension context invalidated')) {
@@ -65,7 +64,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 
     console.log('[AutoContinue] Message received:', message);
-    
+
     switch (message.action) {
       case 'testPopup':
         testPopupFunctionality();
@@ -87,13 +86,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 function testPopupFunctionality(): void {
   console.log('[AutoContinue] Testing popup functionality...');
-  
+
   const video = document.querySelector('video') as HTMLVideoElement;
   if (!video) {
     alert('No video found on this page. Please go to a YouTube video page to test.');
     return;
   }
-  
+
   console.log('[AutoContinue] Pausing video for test...');
   video.pause();
   const overlay = document.createElement('div');
@@ -111,7 +110,7 @@ function testPopupFunctionality(): void {
     justify-content: center;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   `;
-  
+
   const modal = document.createElement('div');
   modal.style.cssText = `
     background: white;
@@ -123,7 +122,7 @@ function testPopupFunctionality(): void {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     border: 1px solid #e9ecef;
   `;
-  
+
   modal.innerHTML = `
     <div style="margin-bottom: 25px;">
       <div style="font-size: 48px; margin-bottom: 15px; color: #007bff;">⏸</div>
@@ -160,17 +159,17 @@ function testPopupFunctionality(): void {
       Test Mode: This simulates YouTube's "Continue watching?" popup
     </div>
   `;
-  
+
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
-  
-  overlay.addEventListener('click', (e) => {
+
+  overlay.addEventListener('click', e => {
     if (e.target === overlay) {
       e.preventDefault();
       e.stopPropagation();
     }
   });
-  
+
   const continueBtn = document.getElementById('autocontinue-test-continue');
   const closeBtn = document.getElementById('autocontinue-test-close');
   if (continueBtn) {
@@ -183,15 +182,15 @@ function testPopupFunctionality(): void {
     continueBtn.addEventListener('click', () => {
       console.log('[AutoContinue] Test popup - Continue button clicked!');
       document.body.removeChild(overlay);
-      
+
       if (video.paused) {
         video.play().catch(e => console.log('[AutoContinue] Could not resume video:', e));
       }
-      
+
       showTestResult('AutoContinue automatically clicked "Continue watching"!', 'success');
     });
   }
-  
+
   if (closeBtn) {
     closeBtn.addEventListener('mouseenter', () => {
       closeBtn.style.background = '#545b62';
@@ -202,33 +201,35 @@ function testPopupFunctionality(): void {
     closeBtn.addEventListener('click', () => {
       console.log('[AutoContinue] Test popup - Cancel button clicked');
       document.body.removeChild(overlay);
-      
+
       if (video.paused) {
         video.play().catch(e => console.log('[AutoContinue] Could not resume video:', e));
       }
-      
+
       showTestResult('Test popup cancelled manually', 'info');
     });
   }
-  
+
   setTimeout(() => {
     if (document.body.contains(overlay)) {
-      console.log('[AutoContinue] Auto-clicking Continue button to demonstrate AutoContinue behavior');
+      console.log(
+        '[AutoContinue] Auto-clicking Continue button to demonstrate AutoContinue behavior'
+      );
       if (continueBtn) {
         continueBtn.click();
       }
     }
   }, 3000);
-  
+
   setTimeout(() => {
     if (document.body.contains(overlay)) {
       console.log('[AutoContinue] Test popup timed out');
       document.body.removeChild(overlay);
-      
+
       if (video.paused) {
         video.play().catch(e => console.log('[AutoContinue] Could not resume video:', e));
       }
-      
+
       showTestResult('Test popup timed out', 'info');
     }
   }, 10000);
@@ -237,20 +238,20 @@ function testPopupFunctionality(): void {
 // Fallback auto-continue logic (works even if injected script fails)
 function setupFallbackAutoContinue(): void {
   console.log('[AutoContinue] Setting up fallback auto-continue logic...');
-  
+
   // Listen for YouTube's popup events
   document.addEventListener('yt-popup-opened', (event: Event) => {
     const customEvent = event as CustomEvent;
     if (customEvent.detail && customEvent.detail.nodeName === 'YT-CONFIRM-DIALOG-RENDERER') {
       console.log('[AutoContinue] "Continue watching?" popup detected (fallback)');
-      
+
       // Try to find and click the continue button
       setTimeout(() => {
         const selectors = [
           'button[aria-label*="Continue"]',
           'button[aria-label*="continue"]',
           'yt-button-renderer button',
-          '#confirm-button'
+          '#confirm-button',
         ];
 
         for (const selector of selectors) {
@@ -258,7 +259,7 @@ function setupFallbackAutoContinue(): void {
           if (button && button.offsetParent !== null) {
             console.log('[AutoContinue] Auto-clicking continue button (fallback)');
             button.click();
-            
+
             // Try to play video if paused
             const video = document.querySelector<HTMLVideoElement>('video');
             if (video && video.paused) {
@@ -295,7 +296,7 @@ function showTestResult(message: string, type: 'success' | 'info'): void {
     animation: fadeInScale 0.3s ease-out;
   `;
   resultDiv.textContent = message;
-  
+
   // Add CSS animation
   const style = document.createElement('style');
   style.textContent = `
@@ -311,9 +312,9 @@ function showTestResult(message: string, type: 'success' | 'info'): void {
     }
   `;
   document.head.appendChild(style);
-  
+
   document.body.appendChild(resultDiv);
-  
+
   // Show for longer and add fade out animation
   setTimeout(() => {
     if (document.body.contains(resultDiv)) {

@@ -1,4 +1,3 @@
-
 interface AutoContinueStats {
   enabled: boolean;
   autoContinueCount: number;
@@ -41,14 +40,14 @@ class PopupController {
         'enabled',
         'autoContinueCount',
         'timeSaved',
-        'lastReset'
+        'lastReset',
       ]);
 
       const stats: AutoContinueStats = {
         enabled: result.enabled !== false, // Default to true
         autoContinueCount: result.autoContinueCount || 0,
         timeSaved: result.timeSaved || 0,
-        lastReset: result.lastReset || Date.now()
+        lastReset: result.lastReset || Date.now(),
       };
 
       this.updateUI(stats);
@@ -92,7 +91,7 @@ class PopupController {
       const enabled = this.enabledToggle.checked;
       await chrome.storage.local.set({ enabled });
       this.updateStatusText(enabled);
-      
+
       try {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (tab?.id) {
@@ -108,50 +107,62 @@ class PopupController {
         await chrome.storage.local.set({
           autoContinueCount: 0,
           timeSaved: 0,
-          lastReset: Date.now()
+          lastReset: Date.now(),
         });
         await this.loadSettings();
       }
     });
 
     this.testPopupBtn.addEventListener('click', async () => {
+      const originalText = this.testPopupBtn.textContent;
       try {
-        const originalText = this.testPopupBtn.textContent;
         this.testPopupBtn.textContent = 'Testing...';
         this.testPopupBtn.disabled = true;
-        
+
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         console.log('[AutoContinue Popup] Current tab:', tab);
-        
+
         if (tab?.id && tab.url) {
           console.log('[AutoContinue Popup] Sending test message to content script...');
-          
+
           try {
             console.log('[AutoContinue Popup] Attempting to send message to tab:', tab.id);
             await chrome.tabs.sendMessage(tab.id, { action: 'testPopup' });
-            console.log('[AutoContinue Popup] Message sent successfully to content script - test popup should appear on the website');
+            console.log(
+              '[AutoContinue Popup] Message sent successfully to content script - test popup should appear on the website'
+            );
           } catch (messageError) {
-            console.log('[AutoContinue Popup] Failed to send message to content script:', messageError);
+            console.log(
+              '[AutoContinue Popup] Failed to send message to content script:',
+              messageError
+            );
             console.log('[AutoContinue Popup] Trying to inject content script manually...');
-            
+
             try {
               await chrome.scripting.executeScript({
                 target: { tabId: tab.id },
-                files: ['js/content.js']
+                files: ['js/content.js'],
               });
               console.log('[AutoContinue Popup] Content script injected manually');
-              
+
               setTimeout(async () => {
                 try {
                   await chrome.tabs.sendMessage(tab.id, { action: 'testPopup' });
-                  console.log('[AutoContinue Popup] Message sent successfully after manual injection - test popup should appear on the website');
+                  console.log(
+                    '[AutoContinue Popup] Message sent successfully after manual injection - test popup should appear on the website'
+                  );
                 } catch (retryError) {
-                  console.log('[AutoContinue Popup] Still failed after manual injection, using fallback');
+                  console.log(
+                    '[AutoContinue Popup] Still failed after manual injection, using fallback'
+                  );
                   showFallbackTestPopup();
                 }
               }, 500);
             } catch (injectError) {
-              console.log('[AutoContinue Popup] Failed to inject content script manually:', injectError);
+              console.log(
+                '[AutoContinue Popup] Failed to inject content script manually:',
+                injectError
+              );
               console.log('[AutoContinue Popup] Using fallback test popup in extension popup');
               showFallbackTestPopup();
             }
@@ -160,12 +171,11 @@ class PopupController {
           console.log('[AutoContinue Popup] No active tab, cannot show test popup');
           alert('Please open a webpage to test the AutoContinue functionality.');
         }
-        
+
         setTimeout(() => {
           this.testPopupBtn.textContent = originalText;
           this.testPopupBtn.disabled = false;
         }, 1000);
-        
       } catch (error) {
         console.error('[AutoContinue Popup] Failed to test popup:', error);
         this.testPopupBtn.textContent = originalText;
@@ -188,7 +198,9 @@ class PopupController {
 
 function showFallbackTestPopup(): void {
   console.log('[AutoContinue Popup] Content script injection failed, showing simple alert');
-  alert('AutoContinue Test\n\nThis demonstrates how AutoContinue automatically dismisses YouTube\'s "Continue watching?" popup.\n\nAutoContinue would have automatically clicked "Continue watching".\n\nGo to a YouTube video page to test the real functionality.');
+  alert(
+    'AutoContinue Test\n\nThis demonstrates how AutoContinue automatically dismisses YouTube\'s "Continue watching?" popup.\n\nAutoContinue would have automatically clicked "Continue watching".\n\nGo to a YouTube video page to test the real functionality.'
+  );
 }
 
 function showTestResult(message: string, type: 'success' | 'info'): void {
@@ -208,9 +220,9 @@ function showTestResult(message: string, type: 'success' | 'info'): void {
     max-width: 300px;
   `;
   resultDiv.textContent = message;
-  
+
   document.body.appendChild(resultDiv);
-  
+
   // Remove after 3 seconds
   setTimeout(() => {
     if (document.body.contains(resultDiv)) {
@@ -221,43 +233,45 @@ function showTestResult(message: string, type: 'success' | 'info'): void {
 
 function setupFallbackButtons(): void {
   console.log('[AutoContinue Popup] Setting up fallback buttons...');
-  
+
   const testBtn = document.getElementById('test-popup');
   if (testBtn && !testBtn.onclick) {
     console.log('[AutoContinue Popup] Setting up fallback test button');
-    testBtn.onclick = function() {
-      alert('AutoContinue Test\n\nThis demonstrates how AutoContinue automatically dismisses YouTube\'s "Continue watching?" popup.\n\nAutoContinue would have automatically clicked "Continue watching".\n\nGo to a YouTube video page to test the real functionality.');
+    testBtn.onclick = function () {
+      alert(
+        'AutoContinue Test\n\nThis demonstrates how AutoContinue automatically dismisses YouTube\'s "Continue watching?" popup.\n\nAutoContinue would have automatically clicked "Continue watching".\n\nGo to a YouTube video page to test the real functionality.'
+      );
     };
   }
-  
+
   const settingsBtn = document.getElementById('open-options');
   if (settingsBtn && !settingsBtn.onclick) {
     console.log('[AutoContinue Popup] Setting up fallback settings button');
-    settingsBtn.onclick = function() {
+    settingsBtn.onclick = function () {
       chrome.runtime.openOptionsPage();
     };
   }
-  
+
   const resetBtn = document.getElementById('reset-stats');
   if (resetBtn && !resetBtn.onclick) {
     console.log('[AutoContinue Popup] Setting up fallback reset button');
-    resetBtn.onclick = function() {
+    resetBtn.onclick = function () {
       if (confirm('Are you sure you want to reset all statistics?')) {
         chrome.storage.local.set({
           autoContinueCount: 0,
           timeSaved: 0,
-          lastReset: Date.now()
+          lastReset: Date.now(),
         });
         alert('Statistics reset successfully!');
         location.reload();
       }
     };
   }
-  
+
   const toggle = document.getElementById('enabled-toggle') as HTMLInputElement;
   if (toggle && !toggle.onchange) {
     console.log('[AutoContinue Popup] Setting up fallback toggle');
-    toggle.onchange = function() {
+    toggle.onchange = function () {
       const enabled = this.checked;
       chrome.storage.local.set({ enabled });
       const statusText = document.getElementById('status-text');
@@ -299,8 +313,10 @@ setTimeout(() => {
   const testBtn = document.getElementById('test-popup');
   if (testBtn && !testBtn.onclick) {
     console.log('[AutoContinue Popup] Setting up delayed fallback test button');
-    testBtn.onclick = function() {
-      alert('AutoContinue Test\n\nThis demonstrates how AutoContinue automatically dismisses YouTube\'s "Continue watching?" popup.\n\nAutoContinue would have automatically clicked "Continue watching".\n\nGo to a YouTube video page to test the real functionality.');
+    testBtn.onclick = function () {
+      alert(
+        'AutoContinue Test\n\nThis demonstrates how AutoContinue automatically dismisses YouTube\'s "Continue watching?" popup.\n\nAutoContinue would have automatically clicked "Continue watching".\n\nGo to a YouTube video page to test the real functionality.'
+      );
     };
   }
 }, 100);
