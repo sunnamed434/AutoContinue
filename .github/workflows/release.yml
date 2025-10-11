@@ -30,8 +30,8 @@ jobs:
         env:
           VERSION: ${{ github.ref_name }}
           
-      - name: Run tests
-        run: npm run test
+      - name: Run linter
+        run: npm run lint
         
       - name: Build all platforms
         run: |
@@ -107,19 +107,6 @@ jobs:
             4. Enable "Developer mode"
             5. Click "Load unpacked" and select the extracted folder
             
-            ## Features
-            
-            - ✅ Automatically dismiss YouTube's "Continue watching?" popup
-            - ✅ Works on YouTube and YouTube Music
-            - ✅ Statistics tracking
-            - ✅ Enable/disable toggle
-            - ✅ Multi-language support
-            
-            ## Support
-            
-            - 🐛 [Report Issues](https://github.com/sunnamed434/AutoContinue/issues)
-            - 💬 [Discussions](https://github.com/sunnamed434/AutoContinue/discussions)
-            - 📖 [Documentation](https://github.com/sunnamed434/AutoContinue#readme)
           files: |
             release/AutoContinue-Chrome-${{ github.ref_name }}.zip
             release/AutoContinue-Firefox-${{ github.ref_name }}.zip
@@ -129,3 +116,55 @@ jobs:
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-chrome:
+    name: Publish to Chrome Web Store
+    runs-on: ubuntu-latest
+    needs: release
+    if: ${{ !contains(github.ref_name, 'alpha') && !contains(github.ref_name, 'beta') && !contains(github.ref_name, 'rc') }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Update version from tag
+        run: node scripts/version.js
+        env:
+          VERSION: ${{ github.ref_name }}
+          
+      - name: Build Chrome extension
+        run: npm run build:chrome
+        env:
+          VERSION: ${{ github.ref_name }}
+          
+      - name: Package Chrome extension for Web Store
+        run: |
+          cd dist
+          zip -r ../AutoContinue-Chrome-WebStore-${{ github.ref_name }}.zip . -x "*.map"
+          cd ..
+          
+      - name: Install Chrome Web Store Upload CLI
+        run: npm install --save-dev chrome-webstore-upload-cli
+        
+      - name: Publish to Chrome Web Store
+        run: |
+          npx chrome-webstore-upload \
+            --source AutoContinue-Chrome-WebStore-${{ github.ref_name }}.zip \
+            --extension-id $CHROME_WEB_STORE_EXTENSION_ID \
+            --client-id $CHROME_WEB_STORE_CLIENT_ID \
+            --client-secret $CHROME_WEB_STORE_CLIENT_SECRET \
+            --refresh-token $CHROME_WEB_STORE_REFRESH_TOKEN
+        env:
+          CHROME_WEB_STORE_EXTENSION_ID: ${{ secrets.CHROME_WEB_STORE_EXTENSION_ID }}
+          CHROME_WEB_STORE_CLIENT_ID: ${{ secrets.CHROME_WEB_STORE_CLIENT_ID }}
+          CHROME_WEB_STORE_CLIENT_SECRET: ${{ secrets.CHROME_WEB_STORE_CLIENT_SECRET }}
+          CHROME_WEB_STORE_REFRESH_TOKEN: ${{ secrets.CHROME_WEB_STORE_REFRESH_TOKEN }}
