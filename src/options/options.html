@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoContinue Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <img src="../images/icon48.png" alt="AutoContinue" class="icon">
+      <div class="title-section">
+        <h1>AutoContinue Settings</h1>
+        <p class="subtitle">Configure your YouTube auto-continue experience</p>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="section">
+        <h2>General Settings</h2>
+        
+        <div class="setting">
+          <div class="setting-info">
+            <label for="enabled" class="setting-label">Enable AutoContinue</label>
+            <p class="setting-description">Automatically dismiss YouTube's "Continue watching?" popup</p>
+          </div>
+          <div class="setting-control">
+            <label class="toggle">
+              <input type="checkbox" id="enabled" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="setting">
+          <div class="setting-info">
+            <label for="show-notifications" class="setting-label">Show Notifications</label>
+            <p class="setting-description">Display a notification when auto-continuing a video</p>
+          </div>
+          <div class="setting-control">
+            <label class="toggle">
+              <input type="checkbox" id="show-notifications">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="setting">
+          <div class="setting-info">
+            <label for="idle-timeout" class="setting-label">Idle Timeout</label>
+            <p class="setting-description">How long to wait before considering user idle (seconds)</p>
+          </div>
+          <div class="setting-control">
+            <input type="number" id="idle-timeout" min="1" max="60" value="5" class="number-input">
+          </div>
+        </div>
+
+        <div class="setting">
+          <div class="setting-info">
+            <label for="auto-click-delay" class="setting-label">Auto-click Delay</label>
+            <p class="setting-description">Delay before auto-clicking continue button (milliseconds)</p>
+          </div>
+          <div class="setting-control">
+            <input type="number" id="auto-click-delay" min="0" max="5000" value="100" class="number-input">
+          </div>
+        </div>
+
+        <div class="setting">
+          <div class="setting-info">
+            <label for="enable-youtube-music" class="setting-label">Enable for YouTube Music</label>
+            <p class="setting-description">Also auto-continue on YouTube Music</p>
+          </div>
+          <div class="setting-control">
+            <label class="toggle">
+              <input type="checkbox" id="enable-youtube-music" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Statistics</h2>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number" id="total-continues">0</div>
+            <div class="stat-label">Auto-continued</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="total-time-saved">0s</div>
+            <div class="stat-label">Time saved</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="last-reset">Never</div>
+            <div class="stat-label">Last reset</div>
+          </div>
+        </div>
+
+        <div class="stats-actions">
+          <button id="reset-stats" class="btn btn-danger">Reset Statistics</button>
+          <button id="export-stats" class="btn btn-secondary">Export Data</button>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>About</h2>
+        
+        <div class="about-content">
+          <p>AutoContinue automatically dismisses YouTube's "Continue watching?" popup to ensure uninterrupted video playback.</p>
+          
+          <div class="links">
+            <a href="https://github.com/sunnamed434/AutoContinue" target="_blank" class="link">
+              <span class="link-icon">📁</span>
+              GitHub Repository
+            </a>
+            <a href="https://github.com/sunnamed434/AutoContinue/issues" target="_blank" class="link">
+              <span class="link-icon">🐛</span>
+              Report Issues
+            </a>
+            <a href="https://github.com/sunnamed434/AutoContinue/releases" target="_blank" class="link">
+              <span class="link-icon">📦</span>
+              Releases
+            </a>
+          </div>
+
+          <div class="version-info">
+            <p>Version: <span id="version">1.0.0</span></p>
+            <p>License: MIT</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

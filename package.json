@@ -1,0 +1,55 @@
+{
+  "name": "autocontinue",
+  "version": "0.0.0",
+  "description": "Automatically dismiss YouTube's 'Continue watching?' popup for uninterrupted playback",
+  "main": "dist/background.js",
+  "scripts": {
+    "build": "npm run build:chrome",
+    "build:chrome": "webpack --env browser=chrome --config webpack.config.js --mode production",
+    "build:firefox": "webpack --env browser=firefox --config webpack.config.js --mode production",
+    "build:safari": "webpack --env browser=safari --config webpack.config.js --mode production",
+    "build:dev": "webpack --env browser=chrome --config webpack.config.js --mode development",
+    "build:watch": "webpack --env browser=chrome --config webpack.config.js --mode development --watch",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css,html}\"",
+    "clean": "rimraf dist",
+    "version:update": "node scripts/version.js",
+    "prebuild": "npm run version:update"
+  },
+  "keywords": [
+    "youtube",
+    "auto-continue",
+    "continue-watching",
+    "browser-extension",
+    "chrome-extension",
+    "firefox-extension"
+  ],
+  "author": "AutoContinue Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sunnamed434/AutoContinue.git"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "@types/node": "^20.14.10",
+    "@typescript-eslint/eslint-plugin": "^7.16.0",
+    "@typescript-eslint/parser": "^7.16.0",
+    "copy-webpack-plugin": "^12.0.2",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "prettier": "^3.3.2",
+    "rimraf": "^5.0.7",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.5.3",
+    "webpack": "^5.92.1",
+    "webpack-cli": "^5.1.4"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
+

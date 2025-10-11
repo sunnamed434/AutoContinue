@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resize AutoContinue Logo</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        canvas { border: 1px solid #ccc; margin: 10px; }
+        .icon-set { display: flex; gap: 20px; flex-wrap: wrap; }
+        .icon-info { text-align: center; margin-bottom: 10px; }
+        button { padding: 10px 20px; font-size: 16px; background: #FF0000; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h1>AutoContinue Logo Resizer</h1>
+    <p>This will resize your logo to create the required extension icon sizes.</p>
+    
+    <input type="file" id="logoInput" accept="image/*" style="margin: 10px 0;">
+    <br>
+    <button onclick="loadAndResizeLogo()">Load & Resize Logo</button>
+    <button onclick="downloadAllIcons()">Download All Icons</button>
+    
+    <div class="icon-set" id="iconSet" style="display: none;">
+        <div class="icon-info">
+            <canvas id="icon16" width="16" height="16"></canvas>
+            <div>16x16</div>
+        </div>
+        <div class="icon-info">
+            <canvas id="icon32" width="32" height="32"></canvas>
+            <div>32x32</div>
+        </div>
+        <div class="icon-info">
+            <canvas id="icon48" width="48" height="48"></canvas>
+            <div>48x48</div>
+        </div>
+        <div class="icon-info">
+            <canvas id="icon128" width="128" height="128"></canvas>
+            <div>128x128</div>
+        </div>
+    </div>
+    
+    <div id="status" style="margin-top: 20px; font-family: monospace;"></div>
+
+    <script>
+        let originalImage = null;
+        
+        function loadAndResizeLogo() {
+            const fileInput = document.getElementById('logoInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a logo file first!');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    originalImage = img;
+                    resizeToAllSizes();
+                    document.getElementById('iconSet').style.display = 'flex';
+                    document.getElementById('status').innerHTML = '✅ Logo loaded and resized! Click "Download All Icons" to save them.';
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function resizeToAllSizes() {
+            const sizes = [16, 32, 48, 128];
+            sizes.forEach(size => {
+                const canvas = document.getElementById(`icon${size}`);
+                const ctx = canvas.getContext('2d');
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, size, size);
+                
+                // Draw resized image
+                ctx.drawImage(originalImage, 0, 0, size, size);
+            });
+        }
+        
+        function downloadIcon(canvas, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        function downloadAllIcons() {
+            if (!originalImage) {
+                alert('Please load a logo first!');
+                return;
+            }
+            
+            const sizes = [16, 32, 48, 128];
+            sizes.forEach(size => {
+                const canvas = document.getElementById(`icon${size}`);
+                downloadIcon(canvas, `icon${size}.png`);
+            });
+            
+            document.getElementById('status').innerHTML = '✅ All icons downloaded! Save them to the images/ folder in your AutoContinue project.';
+        }
+        
+        // Auto-load the logo if it exists
+        window.onload = function() {
+            // Try to load the logo automatically
+            const img = new Image();
+            img.onload = function() {
+                originalImage = img;
+                resizeToAllSizes();
+                document.getElementById('iconSet').style.display = 'flex';
+                document.getElementById('status').innerHTML = '✅ Logo loaded automatically! Click "Download All Icons" to save them.';
+            };
+            img.onerror = function() {
+                document.getElementById('status').innerHTML = 'Please select your logo file using the file input above.';
+            };
+            img.src = 'images/logo.png';
+        };
+    </script>
+</body>
+</html>

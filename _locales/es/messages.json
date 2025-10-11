@@ -1,0 +1,110 @@
+{
+  "fullName": {
+    "message": "AutoContinue - YouTube Auto Continuar",
+    "description": "Full extension name"
+  },
+  "Description": {
+    "message": "Descartar automáticamente el popup '¿Continuar viendo?' de YouTube para reproducción ininterrumpida. Funciona en YouTube y YouTube Music.",
+    "description": "Extension description"
+  },
+  "popupTitle": {
+    "message": "AutoContinue",
+    "description": "Popup title"
+  },
+  "enabled": {
+    "message": "Habilitado",
+    "description": "Status when extension is enabled"
+  },
+  "disabled": {
+    "message": "Deshabilitado",
+    "description": "Status when extension is disabled"
+  },
+  "autoContinued": {
+    "message": "Auto-continuado:",
+    "description": "Label for auto-continue count"
+  },
+  "timeSaved": {
+    "message": "Tiempo ahorrado:",
+    "description": "Label for time saved"
+  },
+  "resetStats": {
+    "message": "Restablecer Estadísticas",
+    "description": "Button to reset statistics"
+  },
+  "settings": {
+    "message": "Configuración",
+    "description": "Button to open settings"
+  },
+  "github": {
+    "message": "GitHub",
+    "description": "Link to GitHub repository"
+  },
+  "enableAutoContinue": {
+    "message": "Habilitar AutoContinue",
+    "description": "Setting to enable/disable the extension"
+  },
+  "enableAutoContinueDescription": {
+    "message": "Descartar automáticamente el popup '¿Continuar viendo?' de YouTube",
+    "description": "Description for enable setting"
+  },
+  "showNotifications": {
+    "message": "Mostrar Notificaciones",
+    "description": "Setting to show notifications"
+  },
+  "showNotificationsDescription": {
+    "message": "Mostrar una notificación al auto-continuar un video",
+    "description": "Description for notifications setting"
+  },
+  "statistics": {
+    "message": "Estadísticas",
+    "description": "Statistics section title"
+  },
+  "totalContinues": {
+    "message": "Auto-continuado",
+    "description": "Total auto-continues label"
+  },
+  "totalTimeSaved": {
+    "message": "Tiempo ahorrado",
+    "description": "Total time saved label"
+  },
+  "lastReset": {
+    "message": "Último restablecimiento",
+    "description": "Last reset label"
+  },
+  "resetStatistics": {
+    "message": "Restablecer Estadísticas",
+    "description": "Button to reset statistics"
+  },
+  "exportData": {
+    "message": "Exportar Datos",
+    "description": "Button to export data"
+  },
+  "about": {
+    "message": "Acerca de",
+    "description": "About section title"
+  },
+  "aboutDescription": {
+    "message": "AutoContinue descarta automáticamente el popup '¿Continuar viendo?' de YouTube para asegurar reproducción ininterrumpida.",
+    "description": "About description"
+  },
+  "githubRepository": {
+    "message": "Repositorio GitHub",
+    "description": "Link to GitHub repository"
+  },
+  "reportIssues": {
+    "message": "Reportar Problemas",
+    "description": "Link to report issues"
+  },
+  "releases": {
+    "message": "Lanzamientos",
+    "description": "Link to releases"
+  },
+  "version": {
+    "message": "Versión:",
+    "description": "Version label"
+  },
+  "license": {
+    "message": "Licencia:",
+    "description": "License label"
+  }
+}

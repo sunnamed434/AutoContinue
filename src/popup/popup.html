@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoContinue</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="../images/icon32.png" alt="AutoContinue" class="icon">
+      <h1>AutoContinue</h1>
+    </div>
+    
+    <div class="status">
+      <div class="toggle-container">
+        <label class="toggle">
+          <input type="checkbox" id="enabled-toggle" checked>
+          <span class="slider"></span>
+        </label>
+        <span id="status-text">Enabled</span>
+      </div>
+    </div>
+    
+    <div class="stats">
+      <div class="stat-item">
+        <span class="stat-label">Auto-continued:</span>
+        <span id="continue-count" class="stat-value">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Time saved:</span>
+        <span id="time-saved" class="stat-value">0s</span>
+      </div>
+    </div>
+    
+    <div class="actions">
+      <button id="reset-stats" class="btn btn-secondary">Reset Stats</button>
+      <button id="test-popup" class="btn btn-test">Test Popup</button>
+      <button id="open-options" class="btn btn-primary">Settings</button>
+    </div>
+    
+    <div class="footer">
+      <a href="https://github.com/sunnamed434/AutoContinue" target="_blank" class="link">
+        GitHub
+      </a>
+      <span class="version">v0.0.0</span>
+    </div>
+  </div>
+  
+  <script src="../js/popup.js"></script>
+</body>
+</html>
