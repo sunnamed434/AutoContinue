@@ -1,53 +1,122 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AutoContinue</title>
-  <link rel="stylesheet" href="popup.css">
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <img src="../images/icon32.png" alt="AutoContinue" class="icon">
-      <h1>AutoContinue</h1>
-    </div>
-    
-    <div class="status">
-      <div class="toggle-container">
-        <label class="toggle">
-          <input type="checkbox" id="enabled-toggle" checked>
-          <span class="slider"></span>
-        </label>
-        <span id="status-text">Enabled</span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AutoContinue</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="header-left">
+          <img src="../images/icon32.png" alt="AutoContinue" class="icon" />
+          <h1>AutoContinue</h1>
+        </div>
+        <div class="header-right">
+          <label class="theme-toggle">
+            <input type="checkbox" id="theme-toggle" checked />
+            <span class="theme-slider">
+              <span class="theme-icon"></span>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="video-status" id="video-status" style="display: none">
+        <div class="status-message">
+          <span class="status-text"
+            >No YouTube video found. If this is incorrect, refresh the tab.</span
+          >
+          <button id="refresh-tab" class="refresh-btn" title="Refresh tab">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+              <path d="M21 3v5h-5" />
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+              <path d="M3 21v-5h5" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="status">
+        <div class="toggle-container">
+          <label class="toggle">
+            <input type="checkbox" id="enabled-toggle" checked />
+            <span class="slider"></span>
+          </label>
+          <span id="status-text">Skipping is enabled</span>
+        </div>
+        <button id="open-options" class="options-btn" title="Options">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1" />
+          </svg>
+          <span>Options</span>
+        </button>
+      </div>
+
+      <div class="submit-section" id="test-section" style="display: none">
+        <h3>Test</h3>
+        <p class="hint">Test the extension by simulating a YouTube continue dialog.</p>
+        <button id="test-popup" class="btn btn-primary">Test Popup</button>
+      </div>
+
+      <div class="your-work">
+        <h3>Statistics</h3>
+        <div class="work-stats">
+          <div class="stat-item">
+            <span class="stat-label">Auto-continued:</span>
+            <span id="continue-count" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Time saved:</span>
+            <span id="time-saved" class="stat-value">0s</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="footer-links">
+          <a
+            href="https://github.com/sunnamed434/AutoContinue/wiki"
+            target="_blank"
+            class="footer-link"
+            >Help</a
+          >
+          <a href="https://github.com/sunnamed434/AutoContinue" target="_blank" class="footer-link"
+            >Website</a
+          >
+          <a href="https://github.com/sunnamed434/AutoContinue" target="_blank" class="footer-link"
+            >GitHub</a
+          >
+          <a
+            href="https://github.com/sunnamed434/AutoContinue/issues"
+            target="_blank"
+            class="footer-link"
+            >Issues</a
+          >
+        </div>
+        <button id="copy-debug-logs" class="btn btn-secondary" style="display: none">
+          Copy Debug Logs
+        </button>
       </div>
     </div>
-    
-    <div class="stats">
-      <div class="stat-item">
-        <span class="stat-label">Auto-continued:</span>
-        <span id="continue-count" class="stat-value">0</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Time saved:</span>
-        <span id="time-saved" class="stat-value">0s</span>
-      </div>
-    </div>
-    
-    <div class="actions">
-      <button id="reset-stats" class="btn btn-secondary">Reset Stats</button>
-      <button id="test-popup" class="btn btn-test">Test Popup</button>
-      <button id="open-options" class="btn btn-primary">Settings</button>
-    </div>
-    
-    <div class="footer">
-      <a href="https://github.com/sunnamed434/AutoContinue" target="_blank" class="link">
-        GitHub
-      </a>
-      <span class="version">v0.0.0</span>
-    </div>
-  </div>
-  
-  <script src="../js/popup.js"></script>
-</body>
+
+    <script src="../js/popup.js"></script>
+  </body>
 </html>

@@ -1,4 +1,3 @@
-// Chrome Extension API types
 declare namespace chrome {
   namespace runtime {
     function getManifest(): chrome.runtime.Manifest;
@@ -22,7 +21,6 @@ declare namespace chrome {
   }
 }
 
-// YouTube-specific types
 interface YouTubeVideoElement extends HTMLVideoElement {
   yns_pause?: () => void;
 }
@@ -33,7 +31,6 @@ interface YouTubePopupEvent extends CustomEvent {
   };
 }
 
-// Extension configuration
 interface AutoContinueConfig {
   enabled: boolean;
   showNotifications: boolean;
@@ -42,7 +39,6 @@ interface AutoContinueConfig {
   lastReset: number;
 }
 
-// Global variables for the extension
 declare const AUTO_CONTINUE_VERSION: string;
 declare const IS_YOUTUBE_MUSIC: boolean;
 declare const IS_MOBILE_YOUTUBE: boolean;

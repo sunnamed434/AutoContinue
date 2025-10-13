@@ -1,20 +1,24 @@
 {
   "name": "autocontinue",
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "type": "module",
   "description": "Automatically dismiss YouTube's 'Continue watching?' popup for uninterrupted playback",
   "main": "dist/background.js",
   "scripts": {
     "build": "npm run build:chrome",
-    "build:chrome": "webpack --env browser=chrome --config webpack.config.js --mode production",
-    "build:firefox": "webpack --env browser=firefox --config webpack.config.js --mode production",
-    "build:safari": "webpack --env browser=safari --config webpack.config.js --mode production",
-    "build:dev": "webpack --env browser=chrome --config webpack.config.js --mode development",
-    "build:watch": "webpack --env browser=chrome --config webpack.config.js --mode development --watch",
+    "build:chrome": "webpack --env browser=chrome --config webpack.config.cjs --mode production",
+    "build:firefox": "webpack --env browser=firefox --config webpack.config.cjs --mode production",
+    "build:safari": "webpack --env browser=safari --config webpack.config.cjs --mode production",
+    "build:edge": "webpack --env browser=edge --config webpack.config.cjs --mode production",
+    "build:dev": "webpack --env browser=chrome --config webpack.config.cjs --mode development",
+    "build:watch": "webpack --env browser=chrome --config webpack.config.cjs --mode development --watch",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,html}\"",
     "clean": "rimraf dist",
     "version:update": "node scripts/version.js",
+    "test": "jest --coverage --passWithNoTests",
+    "test:ci": "jest --coverage --ci --maxWorkers=2 --passWithNoTests",
     "prebuild": "npm run version:update"
   },
   "keywords": [
@@ -32,24 +36,27 @@
     "url": "https://github.com/sunnamed434/AutoContinue.git"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.268",
-    "@types/node": "^20.14.10",
-    "@typescript-eslint/eslint-plugin": "^7.16.0",
-    "@typescript-eslint/parser": "^7.16.0",
-    "copy-webpack-plugin": "^12.0.2",
-    "eslint": "^8.57.0",
-    "eslint-config-prettier": "^9.1.0",
+    "@types/chrome": "^0.1.24",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.7.2",
+    "@typescript-eslint/eslint-plugin": "^8.46.0",
+    "@typescript-eslint/parser": "^8.46.0",
+    "copy-webpack-plugin": "^13.0.1",
+    "eslint": "^9.37.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.1.3",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
     "prettier": "^3.3.2",
-    "rimraf": "^5.0.7",
+    "rimraf": "^6.0.1",
+    "ts-jest": "^29.0.5",
     "ts-loader": "^9.5.1",
     "typescript": "^5.5.3",
     "webpack": "^5.92.1",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^6.0.1"
   },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
   }
 }
-

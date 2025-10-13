@@ -9,7 +9,7 @@ module.exports = (env, argv) => {
     entry: {
       background: './src/background.ts',
       content: './src/content.ts',
-      autoconfirm: './src/autoconfirm-simple.ts',
+      autoconfirm: './src/autoconfirm.ts',
       popup: './src/popup/popup.ts',
       options: './src/options/options.ts'
     },
@@ -46,16 +46,17 @@ module.exports = (env, argv) => {
     plugins: [
       new CopyPlugin({
         patterns: [
-          // Copy manifest (browser-specific)
           {
             from: browser === 'safari' ? 'platforms/safari/manifest.json' : 'manifest.json',
             to: 'manifest.json',
             transform(content) {
               const manifest = JSON.parse(content.toString());
               
-              // Browser-specific modifications
+              manifest.content_security_policy = {
+                extension_pages: "script-src 'self'; object-src 'self';"
+              };
+              
               if (browser === 'firefox') {
-                // Firefox uses manifest v2
                 manifest.manifest_version = 2;
                 manifest.browser_action = manifest.action;
                 delete manifest.action;
@@ -63,8 +64,8 @@ module.exports = (env, argv) => {
                   scripts: ['js/background.js'],
                   persistent: false
                 };
+                manifest.content_security_policy = "script-src 'self'; object-src 'self';";
               } else if (browser === 'safari') {
-                // Safari uses manifest v2
                 manifest.manifest_version = 2;
                 manifest.browser_action = manifest.action;
                 delete manifest.action;
@@ -72,13 +73,14 @@ module.exports = (env, argv) => {
                   scripts: ['js/background.js'],
                   persistent: false
                 };
+                manifest.content_security_policy = "script-src 'self'; object-src 'self';";
+              } else if (browser === 'edge') {
               }
               
               return JSON.stringify(manifest, null, 2);
             }
           },
           
-          // Copy popup files
           {
             from: 'src/popup/popup.html',
             to: 'popup/popup.html'
@@ -88,7 +90,6 @@ module.exports = (env, argv) => {
             to: 'popup/popup.css'
           },
           
-          // Copy options files
           {
             from: 'src/options/options.html',
             to: 'options/options.html'
@@ -98,18 +99,38 @@ module.exports = (env, argv) => {
             to: 'options/options.css'
           },
           
-          // Copy locales
           {
             from: '_locales',
             to: '_locales'
           },
           
-          // Copy icons (placeholder - will be created later)
           {
-            from: 'images',
-            to: 'images',
-            noErrorOnMissing: true
-          }
+            from: 'images/icon16.png',
+            to: 'images/icon16.png'
+          },
+          {
+            from: 'images/icon32.png',
+            to: 'images/icon32.png'
+          },
+          {
+            from: 'images/icon48.png',
+            to: 'images/icon48.png'
+          },
+          {
+            from: 'images/icon128.png',
+            to: 'images/icon128.png'
+          },
+          
+          ...(browser === 'safari' ? [
+            {
+              from: 'platforms/safari/manifest.json',
+              to: 'manifest.json'
+            },
+            {
+              from: 'platforms/safari/Info.plist',
+              to: 'Info.plist'
+            }
+          ] : [])
         ]
       })
     ],
@@ -117,7 +138,12 @@ module.exports = (env, argv) => {
     devtool: isProduction ? false : 'source-map',
     
     optimization: {
-      minimize: isProduction
+      minimize: isProduction,
+    },
+    performance: {
+      maxAssetSize: 250000,
+      maxEntrypointSize: 250000,
+      hints: isProduction ? 'warning' : false,
     }
   };
 };

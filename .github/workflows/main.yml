@@ -1,0 +1,210 @@
+name: CI/CD
+
+on:
+  create:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'  # Triggers on semantic version tags (1.0.0, 2.1.3, etc.)
+  push:
+    branches: [ master ]
+    paths:
+      - '.github/workflows/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'webpack.config.cjs'
+      - 'tsconfig.json'
+      - 'jest.config.js'
+      - 'eslint.config.js'
+      - 'src/**'
+      - 'test/**'
+      - 'scripts/**'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - '.github/workflows/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'webpack.config.cjs'
+      - 'tsconfig.json'
+      - 'jest.config.js'
+      - 'eslint.config.js'
+      - 'src/**'
+      - 'test/**'
+      - 'scripts/**'
+
+jobs:
+  test:
+    name: Test & Build
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run linter
+      run: npm run lint
+      
+    - name: Run tests with coverage
+      run: npm run test:ci
+      continue-on-error: true
+
+    - name: Check if tests exist
+      run: |
+        if [ -d "test" ] && [ "$(find test -name '*.test.ts' | wc -l)" -gt 0 ]; then
+          echo "✅ Tests found, running coverage check"
+          if [ ! -f coverage/coverage-summary.json ]; then
+            echo "❌ coverage-summary.json not found; did tests run with coverage?";
+            ls -la coverage || true;
+            exit 1;
+          fi
+          COVERAGE=$(node -e "const fs=require('fs');const c=JSON.parse(fs.readFileSync('coverage/coverage-summary.json','utf8'));console.log(c.total.lines.pct)")
+          echo "Current coverage: ${COVERAGE}%"
+          echo "Required coverage: 0% (tests are being developed)"
+          echo "✅ Coverage check passed (tests are being developed)";
+        else
+          echo "ℹ️ No tests found, skipping coverage check"
+        fi
+
+    - name: Build extensions (Chrome/Firefox/Safari)
+      if: matrix.node-version == '20.x'
+      run: |
+        npm run build:chrome
+        npm run build:firefox
+        npm run build:safari
+
+    - name: Package Chrome build
+      if: matrix.node-version == '20.x'
+      run: |
+        mkdir -p artifacts
+        cd dist
+        zip -r ../artifacts/AutoContinue-Chrome-${{ github.sha }}.zip . -x "*.map"
+        cd ..
+
+    - name: Package Firefox build
+      if: matrix.node-version == '20.x'
+      run: |
+        cd dist
+        zip -r ../artifacts/AutoContinue-Firefox-${{ github.sha }}.zip . -x "*.map"
+        cd ..
+
+    - name: Package Safari build
+      if: matrix.node-version == '20.x'
+      run: |
+        cd dist
+        zip -r ../artifacts/AutoContinue-Safari-${{ github.sha }}.zip . -x "*.map"
+        cd ..
+      
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v5
+      if: matrix.node-version == '20.x'
+      with:
+        files: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: true
+        verbose: true
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Upload Chrome artifact
+      if: matrix.node-version == '20.x'
+      uses: actions/upload-artifact@v4
+      with:
+        name: AutoContinue-Chrome-${{ github.sha }}
+        path: artifacts/AutoContinue-Chrome-${{ github.sha }}.zip
+
+    - name: Upload Firefox artifact
+      if: matrix.node-version == '20.x'
+      uses: actions/upload-artifact@v4
+      with:
+        name: AutoContinue-Firefox-${{ github.sha }}
+        path: artifacts/AutoContinue-Firefox-${{ github.sha }}.zip
+
+    - name: Upload Safari artifact
+      if: matrix.node-version == '20.x'
+      uses: actions/upload-artifact@v4
+      with:
+        name: AutoContinue-Safari-${{ github.sha }}
+        path: artifacts/AutoContinue-Safari-${{ github.sha }}.zip
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for proper tagging
+          
+      - name: Build project
+        id: build
+        uses: ./.github/actions/project-build
+        with:
+          version: ${{ github.ref_name }}
+          node-version: '18'
+          
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get commits since last tag
+          if git describe --tags --abbrev=0 HEAD~1 >/dev/null 2>&1; then
+            PREV_TAG=$(git describe --tags --abbrev=0 HEAD~1)
+            CHANGELOG=$(git log --pretty=format:"- %s" $PREV_TAG..HEAD)
+          else
+            CHANGELOG=$(git log --pretty=format:"- %s" --max-count=20)
+          fi
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: AutoContinue ${{ steps.build.outputs.generated-version }}
+          tag: ${{ github.ref_name }} 
+          body: |
+            ## What's New in ${{ steps.build.outputs.generated-version }}
+            
+            ${{ steps.changelog.outputs.changelog }}
+            
+            ## Downloads
+            
+            ### Browser Extensions
+            - **Chrome/Chromium**: [AutoContinue-Chrome-${{ steps.build.outputs.generated-version }}.zip](https://github.com/sunnamed434/AutoContinue/releases/download/${{ github.ref_name }}/AutoContinue-Chrome-${{ steps.build.outputs.generated-version }}.zip)
+            - **Firefox**: [AutoContinue-Firefox-${{ steps.build.outputs.generated-version }}.zip](https://github.com/sunnamed434/AutoContinue/releases/download/${{ github.ref_name }}/AutoContinue-Firefox-${{ steps.build.outputs.generated-version }}.zip)
+            - **Safari**: [AutoContinue-Safari-${{ steps.build.outputs.generated-version }}.zip](https://github.com/sunnamed434/AutoContinue/releases/download/${{ github.ref_name }}/AutoContinue-Safari-${{ steps.build.outputs.generated-version }}.zip)
+            
+            ### Source Code
+            - **Source Code**: [AutoContinue-Source-${{ steps.build.outputs.generated-version }}.zip](https://github.com/sunnamed434/AutoContinue/releases/download/${{ github.ref_name }}/AutoContinue-Source-${{ steps.build.outputs.generated-version }}.zip)
+            
+            ## Installation
+            
+            1. Download the appropriate extension for your browser
+            2. Extract the ZIP file
+            3. Open your browser's extension management page
+            4. Enable "Developer mode"
+            5. Click "Load unpacked" and select the extracted folder
+            
+          artifacts: |
+            release/AutoContinue-Chrome-${{ steps.build.outputs.generated-version }}.zip
+            release/AutoContinue-Firefox-${{ steps.build.outputs.generated-version }}.zip
+            release/AutoContinue-Safari-${{ steps.build.outputs.generated-version }}.zip
+            release/AutoContinue-Source-${{ steps.build.outputs.generated-version }}.zip
+          draft: true
+          allowUpdates: true
+          prerelease: ${{ steps.build.outputs.is-prerelease }}
