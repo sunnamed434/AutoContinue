@@ -107,10 +107,25 @@ module.exports = (env, argv) => {
             to: '_locales'
           },
           
-          // Copy icons (placeholder - will be created later)
+          // Copy only essential icons
           {
-            from: 'images',
-            to: 'images',
+            from: 'images/icon16.png',
+            to: 'images/icon16.png',
+            noErrorOnMissing: true
+          },
+          {
+            from: 'images/icon32.png',
+            to: 'images/icon32.png',
+            noErrorOnMissing: true
+          },
+          {
+            from: 'images/icon48.png',
+            to: 'images/icon48.png',
+            noErrorOnMissing: true
+          },
+          {
+            from: 'images/icon128.png',
+            to: 'images/icon128.png',
             noErrorOnMissing: true
           },
           
