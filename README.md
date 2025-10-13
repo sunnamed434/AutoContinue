@@ -5,7 +5,7 @@
 </div>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Available-brightgreen)](https://chrome.google.com/webstore/detail/autocontinue)
+[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Under%20Review-orange)](https://chrome.google.com/webstore/detail/autocontinue)
 [![GitHub release](https://img.shields.io/github/release/sunnamed434/AutoContinue.svg)](https://github.com/sunnamed434/AutoContinue/releases)
 [![Build Status](https://github.com/sunnamed434/AutoContinue/workflows/CI/badge.svg)](https://github.com/sunnamed434/AutoContinue/actions)
 
@@ -25,17 +25,16 @@ Ever been watching a YouTube video and that annoying "Continue watching?" popup 
 
 ### Install it
 
-**Easiest way - Chrome Web Store:**
-1. Go to the [Chrome Web Store](https://chrome.google.com/webstore/detail/autocontinue)
-2. Click "Add to Chrome"
-3. That's it! It'll start working on YouTube right away
+**Chrome Web Store (Coming Soon):**
+The extension is currently under review by Google and will be available in the Chrome Web Store soon.
 
-**Manual install (if you want the latest version):**
-1. Download from [GitHub Releases](https://github.com/sunnamed434/AutoContinue/releases)
-2. Unzip the file
+**Manual install (Recommended for now):**
+1. Download the latest release from [GitHub Releases](https://github.com/sunnamed434/AutoContinue/releases)
+2. Unzip the downloaded file
 3. Open Chrome and go to `chrome://extensions/`
-4. Turn on "Developer mode" (toggle in top right)
-5. Click "Load unpacked" and pick the folder you unzipped
+4. Turn on "Developer mode" (toggle in the top right corner)
+5. Click "Load unpacked" and select the unzipped folder
+6. The extension will be installed and ready to use!
 
 ### How to use it
 
