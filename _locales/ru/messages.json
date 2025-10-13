@@ -1,10 +1,10 @@
 {
   "fullName": {
-    "message": "AutoContinue - YouTube™ Auto Continue",
+    "message": "AutoContinue - YouTube™ Автопродолжение",
     "description": "Full extension name"
   },
   "Description": {
-    "message": "Automatically dismiss YouTube's 'Continue watching?' popup for uninterrupted playback. Works on YouTube and YouTube Music.",
+    "message": "Автоматически закрывает всплывающее окно YouTube 'Продолжить просмотр?' для непрерывного воспроизведения. Работает на YouTube и YouTube Music.",
     "description": "Extension description"
   },
   "popupTitle": {
@@ -12,27 +12,27 @@
     "description": "Popup title"
   },
   "enabled": {
-    "message": "Enabled",
+    "message": "Включено",
     "description": "Status when extension is enabled"
   },
   "disabled": {
-    "message": "Disabled",
+    "message": "Отключено",
     "description": "Status when extension is disabled"
   },
   "autoContinued": {
-    "message": "Auto-continued:",
+    "message": "Автопродолжено:",
     "description": "Label for auto-continue count"
   },
   "timeSaved": {
-    "message": "Time saved:",
+    "message": "Сэкономлено времени:",
     "description": "Label for time saved"
   },
   "resetStats": {
-    "message": "Reset Stats",
+    "message": "Сбросить статистику",
     "description": "Button to reset statistics"
   },
   "settings": {
-    "message": "Settings",
+    "message": "Настройки",
     "description": "Button to open settings"
   },
   "github": {
@@ -40,71 +40,71 @@
     "description": "Link to GitHub repository"
   },
   "enableAutoContinue": {
-    "message": "Enable AutoContinue",
+    "message": "Включить AutoContinue",
     "description": "Setting to enable/disable the extension"
   },
   "enableAutoContinueDescription": {
-    "message": "Automatically dismiss YouTube's 'Continue watching?' popup",
+    "message": "Автоматически закрывать всплывающее окно YouTube 'Продолжить просмотр?'",
     "description": "Description for enable setting"
   },
   "showNotifications": {
-    "message": "Show Notifications",
+    "message": "Показывать уведомления",
     "description": "Setting to show notifications"
   },
   "showNotificationsDescription": {
-    "message": "Display a notification when auto-continuing a video",
+    "message": "Показывать уведомление при автопродолжении видео",
     "description": "Description for notifications setting"
   },
   "statistics": {
-    "message": "Statistics",
+    "message": "Статистика",
     "description": "Statistics section title"
   },
   "totalContinues": {
-    "message": "Auto-continued",
+    "message": "Автопродолжено",
     "description": "Total auto-continues label"
   },
   "totalTimeSaved": {
-    "message": "Time saved",
+    "message": "Сэкономлено времени",
     "description": "Total time saved label"
   },
   "lastReset": {
-    "message": "Last reset",
+    "message": "Последний сброс",
     "description": "Last reset label"
   },
   "resetStatistics": {
-    "message": "Reset Statistics",
+    "message": "Сбросить статистику",
     "description": "Button to reset statistics"
   },
   "exportData": {
-    "message": "Export Data",
+    "message": "Экспорт данных",
     "description": "Button to export data"
   },
   "about": {
-    "message": "About",
+    "message": "О программе",
     "description": "About section title"
   },
   "aboutDescription": {
-    "message": "AutoContinue automatically dismisses YouTube's 'Continue watching?' popup to ensure uninterrupted video playback.",
+    "message": "AutoContinue автоматически закрывает всплывающее окно YouTube 'Продолжить просмотр?' для обеспечения непрерывного воспроизведения видео.",
     "description": "About description"
   },
   "githubRepository": {
-    "message": "GitHub Repository",
+    "message": "Репозиторий GitHub",
     "description": "Link to GitHub repository"
   },
   "reportIssues": {
-    "message": "Report Issues",
+    "message": "Сообщить о проблемах",
     "description": "Link to report issues"
   },
   "releases": {
-    "message": "Releases",
+    "message": "Релизы",
     "description": "Link to releases"
   },
   "version": {
-    "message": "Version:",
+    "message": "Версия:",
     "description": "Version label"
   },
   "license": {
-    "message": "License:",
+    "message": "Лицензия:",
     "description": "License label"
   }
 }

@@ -1,72 +1,116 @@
-/**
- * AutoContinue Background Script
- * 
- * Handles extension lifecycle, storage management, and communication
- */
+import { DEFAULT_CONFIG } from './constants/defaults';
 
-// Extension installation and updates
-chrome.runtime.onInstalled.addListener((details) => {
-  console.log('[AutoContinue] Extension installed/updated:', details.reason);
+const hiddenYouTubeTabs = new Set<number>();
+const monitoringIntervals = new Map<number, number>();
 
-  if (details.reason === 'install') {
-    // Set default settings on first install
-    chrome.storage.local.set({
-      enabled: true,
-      showNotifications: false,
-      autoContinueCount: 0,
-      timeSaved: 0,
-      lastReset: Date.now()
-    });
+chrome.runtime.onInstalled.addListener(details => {
+  try {
+    if (details.reason === 'install') {
+      chrome.storage.local
+        .set({
+          enabled: DEFAULT_CONFIG.enabled,
+          showNotifications: DEFAULT_CONFIG.showNotifications,
+          autoContinueCount: DEFAULT_CONFIG.autoContinueCount,
+          timeSaved: DEFAULT_CONFIG.timeSaved,
+          lastReset: DEFAULT_CONFIG.lastReset,
+          idleTimeout: DEFAULT_CONFIG.idleTimeout,
+          autoClickDelay: DEFAULT_CONFIG.autoClickDelay,
+          enableYouTubeMusic: DEFAULT_CONFIG.enableYouTubeMusic,
+          testMode: DEFAULT_CONFIG.testMode,
+        })
+        .then(() => {
+          console.log('[AutoContinue] Default settings initialized');
+        })
+        .catch(error => {
+          console.error('[AutoContinue] Failed to initialize default settings:', error);
+        });
 
-    // Open options page on first install
-    chrome.runtime.openOptionsPage();
+      chrome.runtime.openOptionsPage().catch(error => {
+        console.error('[AutoContinue] Failed to open options page:', error);
+      });
+    }
+  } catch (error) {
+    console.error('[AutoContinue] Error in onInstalled listener:', error);
   }
 });
 
-// Handle messages from content scripts and popup
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log('[AutoContinue] Message received:', message);
-
-  switch (message.action) {
-    case 'toggle':
-      handleToggleMessage(message.enabled);
-      break;
-    case 'updateStats':
-      handleStatsUpdate(message.stats);
-      break;
-    case 'getSettings':
-      handleGetSettings(sendResponse);
-      return true; // Keep message channel open for async response
-    default:
-      console.warn('[AutoContinue] Unknown message action:', message.action);
+chrome.runtime.onMessage.addListener((message, sender, sendResponse): boolean => {
+  try {
+    switch (message.action) {
+      case 'toggle':
+        handleToggleMessage(message.enabled);
+        break;
+      case 'updateStats':
+        handleStatsUpdate();
+        break;
+      case 'getSettings':
+        handleGetSettings(sendResponse);
+        return true;
+      case 'tabHidden':
+        handleTabHidden(sender.tab?.id);
+        break;
+      case 'tabVisible':
+        handleTabVisible(sender.tab?.id);
+        break;
+      default:
+        console.warn('[AutoContinue] Unknown message action:', message.action);
+    }
+    return true;
+  } catch (error) {
+    console.error('[AutoContinue] Error handling message:', error);
+    return false;
   }
 });
 
-// Handle enable/disable toggle
 async function handleToggleMessage(enabled: boolean): Promise<void> {
   try {
     await chrome.storage.local.set({ enabled });
-    console.log('[AutoContinue] Extension', enabled ? 'enabled' : 'disabled');
   } catch (error) {
     console.error('[AutoContinue] Failed to update enabled state:', error);
   }
 }
 
-// Handle statistics updates
-async function handleStatsUpdate(stats: { autoContinueCount: number; timeSaved: number }): Promise<void> {
-  try {
-    await chrome.storage.local.set({
-      autoContinueCount: stats.autoContinueCount,
-      timeSaved: stats.timeSaved,
-      lastReset: Date.now()
-    });
-    console.log('[AutoContinue] Statistics updated:', stats);
-  } catch (error) {
-    console.error('[AutoContinue] Failed to update statistics:', error);
+async function handleStatsUpdate(): Promise<void> {
+  const maxRetries = 3;
+  let retryCount = 0;
+
+  while (retryCount < maxRetries) {
+    try {
+      const result = await chrome.storage.local.get(['autoContinueCount', 'timeSaved']);
+      const currentCount = result['autoContinueCount'] || 0;
+      const currentTimeSaved = result['timeSaved'] || 0;
+
+      const newCount = currentCount + 1;
+      const newTimeSaved = currentTimeSaved + 30;
+
+      await chrome.storage.local.set({
+        autoContinueCount: newCount,
+        timeSaved: newTimeSaved,
+      });
+
+      console.log('[AutoContinue] Statistics updated atomically:', {
+        count: newCount,
+        timeSaved: newTimeSaved,
+      });
+      return;
+    } catch (error) {
+      retryCount++;
+      console.error(
+        `[AutoContinue] Failed to update statistics (attempt ${retryCount}/${maxRetries}):`,
+        error
+      );
+
+      if (retryCount >= maxRetries) {
+        console.error('[AutoContinue] Max retries reached for stats update, giving up');
+        return;
+      }
+
+      const delay = Math.min(1000 * Math.pow(2, retryCount - 1), 5000);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
   }
 }
 
-// Handle settings retrieval
 async function handleGetSettings(sendResponse: (response: any) => void): Promise<void> {
   try {
     const result = await chrome.storage.local.get([
@@ -74,7 +118,7 @@ async function handleGetSettings(sendResponse: (response: any) => void): Promise
       'showNotifications',
       'autoContinueCount',
       'timeSaved',
-      'lastReset'
+      'lastReset',
     ]);
     sendResponse(result);
   } catch (error) {
@@ -83,43 +127,100 @@ async function handleGetSettings(sendResponse: (response: any) => void): Promise
   }
 }
 
-// Handle tab updates to inject content script on YouTube pages
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete' && tab.url) {
-    const isYouTube = tab.url.includes('youtube.com') || tab.url.includes('music.youtube.com');
-    
+async function handleTabHidden(tabId: number | undefined): Promise<void> {
+  if (!tabId) return;
+
+  try {
+    const tab = await chrome.tabs.get(tabId);
+    const isYouTube = tab.url?.includes('youtube.com') || tab.url?.includes('music.youtube.com');
+
     if (isYouTube) {
-      // Content script will be injected automatically via manifest
-      console.log('[AutoContinue] YouTube page loaded:', tab.url);
+      hiddenYouTubeTabs.add(tabId);
+      startMonitoringTab(tabId);
     }
+  } catch (error) {
+    console.error(`[AutoContinue] Failed to handle tab hidden for tab ${tabId}:`, error);
+  }
+}
+
+async function handleTabVisible(tabId: number | undefined): Promise<void> {
+  if (!tabId) return;
+
+  try {
+    hiddenYouTubeTabs.delete(tabId);
+    stopMonitoringTab(tabId);
+  } catch (error) {
+    console.error(`[AutoContinue] Failed to handle tab visible for tab ${tabId}:`, error);
+  }
+}
+
+function startMonitoringTab(tabId: number): void {
+  stopMonitoringTab(tabId);
+
+  const interval = setInterval(async () => {
+    if (!hiddenYouTubeTabs.has(tabId)) {
+      clearInterval(interval as unknown as number);
+      monitoringIntervals.delete(tabId);
+      return;
+    }
+
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['js/autoconfirm.js'],
+      });
+    } catch (error) {
+      console.error(`[AutoContinue] Failed to inject script into tab ${tabId}:`, error);
+      hiddenYouTubeTabs.delete(tabId);
+      clearInterval(interval as unknown as number);
+      monitoringIntervals.delete(tabId);
+    }
+  }, 3000) as unknown as number;
+
+  monitoringIntervals.set(tabId, interval);
+}
+
+function stopMonitoringTab(tabId: number): void {
+  const interval = monitoringIntervals.get(tabId);
+  if (interval) {
+    clearInterval(interval);
+    monitoringIntervals.delete(tabId);
+  }
+}
+
+chrome.tabs.onRemoved.addListener(tabId => {
+  try {
+    hiddenYouTubeTabs.delete(tabId);
+    stopMonitoringTab(tabId);
+  } catch (error) {
+    console.error(`[AutoContinue] Error cleaning up tab ${tabId}:`, error);
   }
 });
 
-// Handle extension icon click
-chrome.action.onClicked.addListener((tab) => {
-  // This will open the popup automatically due to manifest configuration
-  console.log('[AutoContinue] Extension icon clicked');
-});
+try {
+  chrome.alarms.create('dailyCleanup', { periodInMinutes: 24 * 60 });
+} catch (error) {
+  console.error('[AutoContinue] Failed to create daily cleanup alarm:', error);
+}
 
-// Periodic cleanup (run once per day)
-chrome.alarms.create('dailyCleanup', { periodInMinutes: 24 * 60 });
-
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === 'dailyCleanup') {
-    performDailyCleanup();
+chrome.alarms.onAlarm.addListener(alarm => {
+  try {
+    if (alarm.name === 'dailyCleanup') {
+      performDailyCleanup();
+    }
+  } catch (error) {
+    console.error('[AutoContinue] Error in alarm listener:', error);
   }
 });
 
 async function performDailyCleanup(): Promise<void> {
   try {
-    // Clean up old data if needed
     const result = await chrome.storage.local.get(['lastCleanup']);
-    const lastCleanup = result.lastCleanup || 0;
+    const lastCleanup = result['lastCleanup'] || 0;
     const now = Date.now();
     const oneWeek = 7 * 24 * 60 * 60 * 1000;
 
     if (now - lastCleanup > oneWeek) {
-      // Perform cleanup tasks here if needed
       await chrome.storage.local.set({ lastCleanup: now });
       console.log('[AutoContinue] Daily cleanup completed');
     }
@@ -127,3 +228,13 @@ async function performDailyCleanup(): Promise<void> {
     console.error('[AutoContinue] Daily cleanup failed:', error);
   }
 }
+
+self.addEventListener('error', event => {
+  console.error('[AutoContinue] Global error in background script:', event.error);
+});
+
+self.addEventListener('unhandledrejection', event => {
+  console.error('[AutoContinue] Unhandled promise rejection in background script:', event.reason);
+});
+
+console.log('[AutoContinue] Background script loaded successfully');

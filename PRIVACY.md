@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated: December 2024**
+**Last updated: October 2025**
 
 ## Overview
 
@@ -40,9 +40,7 @@ AutoContinue requests the following permissions:
 
 ### Required Permissions
 - **`storage`**: To save your settings locally
-- **`activeTab`**: To interact with YouTube pages
 - **`scripting`**: To inject content scripts for functionality
-- **`alarms`**: For background script functionality
 
 ### Host Permissions
 - **`https://www.youtube.com/*`**: To work on YouTube

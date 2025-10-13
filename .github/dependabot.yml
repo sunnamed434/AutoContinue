@@ -1,0 +1,48 @@
+version: 2
+updates:
+  # Enable version updates for npm
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "sunnamed434"
+    assignees:
+      - "sunnamed434"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "javascript"
+    ignore:
+      # Ignore major version updates for stable packages
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    # Allow updates to dev dependencies
+    allow:
+      - dependency-type: "development"
+      - dependency-type: "production"
+    # Group updates by package manager
+    groups:
+      eslint:
+        patterns:
+          - "eslint*"
+          - "@typescript-eslint/*"
+      webpack:
+        patterns:
+          - "webpack*"
+          - "ts-loader"
+          - "copy-webpack-plugin"
+      typescript:
+        patterns:
+          - "typescript"
+          - "@types/*"
+      prettier:
+        patterns:
+          - "prettier*"
+          - "eslint-config-prettier"
+          - "eslint-plugin-prettier"

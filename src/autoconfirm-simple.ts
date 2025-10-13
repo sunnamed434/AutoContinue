@@ -1,51 +1,110 @@
-console.log('[AutoContinue] Simple autoconfirm script loaded');
-
 let lastInteractionTime = Date.now();
-let isIdle = false;
 let isEnabled = true;
+let idleTimeout = 5000;
+let autoContinueInProgress = false;
 
-function isUserIdle(): boolean {
-  return Date.now() - lastInteractionTime > 5000;
+export function isUserIdle(): boolean {
+  return Date.now() - lastInteractionTime > idleTimeout;
 }
 
-function processInteraction(): void {
+export function processInteraction(): void {
   lastInteractionTime = Date.now();
-  isIdle = false;
 }
 
-function autoClickContinue(): boolean {
+export function resetAutoContinueFlag(): void {
+  autoContinueInProgress = false;
+}
+
+async function loadSettings(): Promise<void> {
+  try {
+    isEnabled = true;
+    idleTimeout = 5000;
+  } catch (error) {
+    console.error('[AutoContinue] Failed to load settings:', error);
+    isEnabled = true;
+    idleTimeout = 5000;
+  }
+}
+
+function setupStorageListener(): void {
+  try {
+    window.addEventListener('autocontinue-settings-updated', (event: any) => {
+      const settings = event.detail;
+      if (settings) {
+        if (settings.enabled !== undefined) {
+          isEnabled = settings.enabled;
+          console.log('[AutoContinue] Extension enabled state changed:', isEnabled);
+        }
+        if (settings.idleTimeout !== undefined) {
+          idleTimeout = (settings.idleTimeout || 5) * 1000;
+          console.log('[AutoContinue] Idle timeout changed:', idleTimeout);
+        }
+      }
+    });
+  } catch (error) {
+    console.error('[AutoContinue] Failed to setup storage listener:', error);
+  }
+}
+
+async function updateStats(): Promise<void> {
+  try {
+    chrome.runtime.sendMessage({
+      action: 'updateStats',
+    });
+
+    console.log('[AutoContinue] Stats update message sent to background script');
+  } catch (error) {
+    console.error('[AutoContinue] Failed to send stats update message:', error);
+  }
+}
+
+export function autoClickContinue(): boolean {
+  if (autoContinueInProgress) {
+    return false;
+  }
+
   const selectors = [
-    'button[aria-label*="Continue"]',
-    'button[aria-label*="continue"]',
-    'button[aria-label*="Resume"]',
-    'button[aria-label*="resume"]',
-    'yt-button-renderer button',
-    '#confirm-button',
-    'yt-confirm-dialog-renderer button',
-    'ytmusic-you-there-renderer button',
-    '[role="button"][aria-label*="Continue"]',
-    '[role="button"][aria-label*="continue"]'
+    'yt-confirm-dialog-renderer button[aria-label*="Continue watching"]',
+    'yt-confirm-dialog-renderer button[aria-label*="continue watching"]',
+    'yt-confirm-dialog-renderer #confirm-button',
+    'yt-confirm-dialog-renderer button[aria-label*="Yes"]',
+    'ytmusic-you-there-renderer button[aria-label*="Continue"]',
+    'ytmusic-you-there-renderer button[aria-label*="continue"]',
+    'yt-confirm-dialog-renderer yt-button-renderer button',
+    'ytmusic-you-there-renderer yt-button-renderer button',
   ];
-  
+
   for (const selector of selectors) {
     const button = document.querySelector(selector) as HTMLButtonElement;
     if (button && button.offsetParent !== null && !button.disabled) {
-      console.log('[AutoContinue] Auto-clicking continue button');
+      autoContinueInProgress = true;
       button.click();
+
+      updateStats().catch(error => {
+        console.error('[AutoContinue] Failed to update stats:', error);
+      });
+
+      setTimeout(() => {
+        autoContinueInProgress = false;
+      }, 1000);
+
       return true;
     }
   }
-  
-  console.log('[AutoContinue] Continue button not found');
+
   return false;
 }
 
 function listenForPopupEvent(): void {
   document.addEventListener('yt-popup-opened', (event: any) => {
     const detail = event.detail;
-    if (detail && (detail.nodeName === 'YT-CONFIRM-DIALOG-RENDERER' || detail.nodeName === 'YTMUSIC-YOU-THERE-RENDERER')) {
+    if (
+      detail &&
+      (detail.nodeName === 'YT-CONFIRM-DIALOG-RENDERER' ||
+        detail.nodeName === 'YTMUSIC-YOU-THERE-RENDERER')
+    ) {
       console.log('[AutoContinue] Continue watching popup detected');
-      
+
       if (isEnabled && isUserIdle()) {
         setTimeout(() => {
           autoClickContinue();
@@ -63,20 +122,21 @@ function setupInteractionListeners(): void {
 }
 
 function setupMutationObserver(): void {
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
+  const observer = new MutationObserver(mutations => {
+    mutations.forEach(mutation => {
       if (mutation.type === 'childList') {
-        mutation.addedNodes.forEach((node) => {
+        mutation.addedNodes.forEach(node => {
           if (node.nodeType === Node.ELEMENT_NODE) {
             const element = node as Element;
-            if (element.matches && (
-              element.matches('yt-confirm-dialog-renderer') ||
-              element.matches('ytmusic-you-there-renderer') ||
-              element.querySelector('yt-confirm-dialog-renderer') ||
-              element.querySelector('ytmusic-you-there-renderer')
-            )) {
+            if (
+              element.matches &&
+              (element.matches('yt-confirm-dialog-renderer') ||
+                element.matches('ytmusic-you-there-renderer') ||
+                element.querySelector('yt-confirm-dialog-renderer') ||
+                element.querySelector('ytmusic-you-there-renderer'))
+            ) {
               console.log('[AutoContinue] Popup detected via mutation observer');
-              
+
               if (isEnabled && isUserIdle()) {
                 setTimeout(() => {
                   autoClickContinue();
@@ -88,20 +148,23 @@ function setupMutationObserver(): void {
       }
     });
   });
-  
+
   observer.observe(document.body, {
     childList: true,
-    subtree: true
+    subtree: true,
   });
 }
 
-function init(): void {
+async function init(): Promise<void> {
   console.log('[AutoContinue] Initializing simple version');
-  
+
+  await loadSettings();
+
   setupInteractionListeners();
   listenForPopupEvent();
   setupMutationObserver();
-  
+  setupStorageListener();
+
   console.log('[AutoContinue] Simple version initialized');
 }
 

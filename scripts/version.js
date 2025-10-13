@@ -1,34 +1,8 @@
-/**
- * Version Management Script
- * 
- * Updates version in manifest.json and package.json from git tag or environment variable
- */
-
 const fs = require('fs');
 const path = require('path');
 
 function getVersion() {
-  // Priority order:
-  // 1. Environment variable (for CI/CD)
-  // 2. Git tag (for local development)
-  // 3. Default fallback
-  
-  if (process.env.VERSION) {
-    return process.env.VERSION;
-  }
-  
-  try {
-    const { execSync } = require('child_process');
-    const gitTag = execSync('git describe --tags --exact-match HEAD 2>/dev/null', { encoding: 'utf8' }).trim();
-    if (gitTag) {
-      // Remove 'v' prefix if present, otherwise use tag as-is
-      return gitTag.startsWith('v') ? gitTag.substring(1) : gitTag;
-    }
-  } catch (error) {
-    // No git tag found, continue to fallback
-  }
-  
-  return '0.0.0'; // Default fallback
+  return process.env.VERSION || '1.0.0';
 }
 
 function updateManifest(version) {

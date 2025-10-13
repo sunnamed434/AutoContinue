@@ -1,204 +1,115 @@
 # AutoContinue
 
+<div align="center">
+  <img src="images/icon128.png" alt="AutoContinue Logo" width="128" height="128">
+</div>
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Available-brightgreen)](https://chrome.google.com/webstore/detail/autocontinue)
 [![GitHub release](https://img.shields.io/github/release/sunnamed434/AutoContinue.svg)](https://github.com/sunnamed434/AutoContinue/releases)
 [![Build Status](https://github.com/sunnamed434/AutoContinue/workflows/CI/badge.svg)](https://github.com/sunnamed434/AutoContinue/actions)
 
-**AutoContinue** automatically dismisses YouTube's "Continue watching?" popup to ensure uninterrupted video playback. Never be interrupted by YouTube's pause prompts again!
+Ever been watching a YouTube video and that annoying "Continue watching?" popup keeps interrupting you? AutoContinue fixes that by automatically clicking the continue button so you can watch without interruptions.
 
-## ✨ Features
+## What it does
 
-- **🚀 Automatic Dismissal**: Instantly dismisses YouTube's "Continue watching?" popup
-- **🎵 YouTube Music Support**: Works on both YouTube and YouTube Music
-- **⚙️ Customizable Settings**: Adjust idle timeout, auto-click delay, and more
-- **📊 Statistics Tracking**: See how many times AutoContinue has helped you
-- **🔧 Advanced Options**: Fine-tune behavior with detailed settings
-- **🧪 Test Mode**: Test the functionality with a built-in test popup
-- **🌍 Multi-language Support**: Available in multiple languages
-- **🔒 Privacy Focused**: No data collection, works entirely locally
+- Automatically clicks "Continue watching?" on YouTube so you don't have to
+- Works on both YouTube and YouTube Music
+- You can adjust how long it waits before clicking (idle timeout)
+- Shows you how many times it's helped you out
+- Has a test mode so you can see it working
+- Available in multiple languages
+- Doesn't collect any of your data - everything stays on your computer
 
-## 🚀 Quick Start
+## Getting started
 
-### Installation
+### Install it
 
-#### Chrome Web Store (Recommended)
-1. Visit the [Chrome Web Store](https://chrome.google.com/webstore/detail/autocontinue)
+**Easiest way - Chrome Web Store:**
+1. Go to the [Chrome Web Store](https://chrome.google.com/webstore/detail/autocontinue)
 2. Click "Add to Chrome"
-3. The extension will automatically work on YouTube!
+3. That's it! It'll start working on YouTube right away
 
-#### Manual Installation
-1. Download the latest release from [GitHub Releases](https://github.com/sunnamed434/AutoContinue/releases)
-2. Extract the ZIP file
+**Manual install (if you want the latest version):**
+1. Download from [GitHub Releases](https://github.com/sunnamed434/AutoContinue/releases)
+2. Unzip the file
 3. Open Chrome and go to `chrome://extensions/`
-4. Enable "Developer mode"
-5. Click "Load unpacked" and select the extracted folder
+4. Turn on "Developer mode" (toggle in top right)
+5. Click "Load unpacked" and pick the folder you unzipped
 
-### Usage
+### How to use it
 
-1. **Automatic**: AutoContinue works automatically once installed
-2. **Test**: Click the extension icon and use "Test Popup" to see it in action
-3. **Configure**: Right-click the extension icon and select "Options" for advanced settings
+Once installed, it just works automatically. But you can also:
+- Click the extension icon to see how many times it's helped you
+- Right-click the icon and pick "Options" to change settings
+- Use the test mode to see it in action
 
-## ⚙️ Configuration
+## For developers
 
-### Basic Settings
-- **Enable/Disable**: Toggle AutoContinue on or off
-- **Show Notifications**: Display notifications when auto-continuing
-- **YouTube Music**: Enable support for YouTube Music
+If you want to build this yourself or contribute:
 
-### Advanced Settings
-- **Idle Timeout**: How long to wait before considering user idle (1-60 seconds)
-- **Auto-click Delay**: Delay before auto-clicking continue button (0-5000ms)
-- **Statistics**: View and reset usage statistics
-
-## 🛠️ Development
-
-### Prerequisites
-- Node.js 16+ 
-- npm or yarn
+**You'll need:**
+- Node.js 16 or newer
+- npm (comes with Node.js)
 - Git
 
-### Setup
+**Setup:**
 ```bash
-# Clone the repository
+# Get the code
 git clone https://github.com/sunnamed434/AutoContinue.git
 cd AutoContinue
 
-# Install dependencies
+# Install stuff
 npm install
 
-# Build the extension
+# Build it
 npm run build:chrome
 
 # Run tests
 npm test
 
-# Start development mode
+# Watch for changes while developing
 npm run build:watch
 ```
 
-### Project Structure
-```
-AutoContinue/
-├── src/                    # Source code
-│   ├── background.ts       # Background script
-│   ├── content.ts          # Content script
-│   ├── autoconfirm-simple.ts # Core auto-continue logic
-│   ├── popup/              # Extension popup
-│   └── options/            # Options page
-├── _locales/               # Internationalization
-├── images/                 # Extension icons
-├── test/                   # Unit tests
-├── .github/workflows/      # CI/CD workflows
-└── dist/                   # Built extension
-```
-
-### Building for Different Browsers
+**Build for different browsers:**
 ```bash
-# Chrome (default)
-npm run build:chrome
-
-# Firefox
-npm run build:firefox
-
-# Safari
-npm run build:safari
+npm run build:chrome    # Chrome (default)
+npm run build:firefox   # Firefox
+npm run build:safari    # Safari
 ```
 
-### Testing
+**Code quality:**
 ```bash
-# Run all tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run tests in watch mode
-npm run test:watch
+npm run lint        # Check for issues
+npm run lint:fix    # Fix issues automatically
+npm run format      # Format code
 ```
 
-## 🤝 Contributing
+## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+Want to help? Great! Check out [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
 
-### Quick Contribution Steps
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes
-4. Run tests: `npm test`
-5. Commit your changes: `git commit -m 'Add amazing feature'`
-6. Push to the branch: `git push origin feature/amazing-feature`
-7. Open a Pull Request
+## What's coming next
 
-### Development Guidelines
-- Follow the existing code style
-- Write tests for new features
-- Update documentation as needed
-- Ensure all tests pass before submitting
+- [x] Auto-continue functionality
+- [x] Chrome extension
+- [x] Settings and stats
+- [x] Test mode
+- [ ] Firefox extension
+- [ ] Edge extension
+- [ ] Opera extension
+- [ ] Safari extension
+- [ ] (?) YouTube Vanced integration
+- [ ] Better statistics
+- [ ] Custom popup detection
 
-## 📋 Roadmap
-
-### Current Version (1.0.0)
-- ✅ Core auto-continue functionality
-- ✅ Chrome extension
-- ✅ Basic settings and statistics
-- ✅ Test mode
-
-### Upcoming Features
-- 🔄 Firefox extension
-- 🔄 Safari extension
-- 🔄 Android app (WebView + userscript)
-- 🔄 iOS app (WebView + userscript)
-- 🔄 MPV integration
-- 🔄 Kodi addon
-- 🔄 Chromecast support
-- 🔄 Advanced statistics and analytics
-- 🔄 Custom popup detection rules
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**Extension not working on YouTube**
-- Ensure the extension is enabled
-- Check if you're on a supported YouTube page
-- Try refreshing the page
-- Check the browser console for errors
-
-**Test popup not appearing**
-- Make sure you're on a YouTube video page
-- Check if the extension has proper permissions
-- Try reloading the extension
-
-**Settings not saving**
-- Check if you have sufficient storage permissions
-- Try resetting the extension settings
-- Clear browser cache and reload
-
-### Getting Help
-- 📖 Check the [FAQ](https://github.com/sunnamed434/AutoContinue/wiki/FAQ)
-- 🐛 Report bugs on [GitHub Issues](https://github.com/sunnamed434/AutoContinue/issues)
-- 💬 Join discussions on [GitHub Discussions](https://github.com/sunnamed434/AutoContinue/discussions)
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
+## Credits
 
 - Inspired by [YoutubeNonStop](https://github.com/lawfx/YoutubeNonStop)
-- Built with modern web technologies
-- Community feedback and contributions
-
-## 📊 Statistics
-
-- **Downloads**: [Chrome Web Store Stats](https://chrome.google.com/webstore/detail/autocontinue)
-- **GitHub Stars**: ![GitHub stars](https://img.shields.io/github/stars/sunnamed434/AutoContinue?style=social)
-- **Contributors**: ![GitHub contributors](https://img.shields.io/github/contributors/sunnamed434/AutoContinue)
+- Built with modern web tech
+- Thanks to everyone who's contributed!
 
 ---
-
-**Made with ❤️ by the AutoContinue team**
 
 [⭐ Star us on GitHub](https://github.com/sunnamed434/AutoContinue) | [🐛 Report Issues](https://github.com/sunnamed434/AutoContinue/issues) | [💬 Join Discussions](https://github.com/sunnamed434/AutoContinue/discussions)

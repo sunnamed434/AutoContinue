@@ -46,16 +46,17 @@ module.exports = (env, argv) => {
     plugins: [
       new CopyPlugin({
         patterns: [
-          // Copy manifest (browser-specific)
           {
             from: browser === 'safari' ? 'platforms/safari/manifest.json' : 'manifest.json',
             to: 'manifest.json',
             transform(content) {
               const manifest = JSON.parse(content.toString());
               
-              // Browser-specific modifications
+              manifest.content_security_policy = {
+                extension_pages: "script-src 'self'; object-src 'self';"
+              };
+              
               if (browser === 'firefox') {
-                // Firefox uses manifest v2
                 manifest.manifest_version = 2;
                 manifest.browser_action = manifest.action;
                 delete manifest.action;
@@ -63,8 +64,8 @@ module.exports = (env, argv) => {
                   scripts: ['js/background.js'],
                   persistent: false
                 };
+                manifest.content_security_policy = "script-src 'self'; object-src 'self';";
               } else if (browser === 'safari') {
-                // Safari uses manifest v2
                 manifest.manifest_version = 2;
                 manifest.browser_action = manifest.action;
                 delete manifest.action;
@@ -72,13 +73,16 @@ module.exports = (env, argv) => {
                   scripts: ['js/background.js'],
                   persistent: false
                 };
+                manifest.content_security_policy = "script-src 'self'; object-src 'self';";
+              } else if (browser === 'edge') {
+                // Edge uses same manifest as Chrome (Manifest V3)
+                // No changes needed
               }
               
               return JSON.stringify(manifest, null, 2);
             }
           },
           
-          // Copy popup files
           {
             from: 'src/popup/popup.html',
             to: 'popup/popup.html'
@@ -88,7 +92,6 @@ module.exports = (env, argv) => {
             to: 'popup/popup.css'
           },
           
-          // Copy options files
           {
             from: 'src/options/options.html',
             to: 'options/options.html'
@@ -109,7 +112,19 @@ module.exports = (env, argv) => {
             from: 'images',
             to: 'images',
             noErrorOnMissing: true
-          }
+          },
+          
+          // Copy Safari-specific files
+          ...(browser === 'safari' ? [
+            {
+              from: 'platforms/safari/manifest.json',
+              to: 'manifest.json'
+            },
+            {
+              from: 'platforms/safari/Info.plist',
+              to: 'Info.plist'
+            }
+          ] : [])
         ]
       })
     ],
@@ -117,7 +132,12 @@ module.exports = (env, argv) => {
     devtool: isProduction ? false : 'source-map',
     
     optimization: {
-      minimize: isProduction
+      minimize: isProduction,
+    },
+    performance: {
+      maxAssetSize: 250000,
+      maxEntrypointSize: 250000,
+      hints: isProduction ? 'warning' : false,
     }
   };
 };
