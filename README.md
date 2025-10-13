@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Under%20Review-orange)](https://chrome.google.com/webstore/detail/autocontinue)
 [![GitHub release](https://img.shields.io/github/release/sunnamed434/AutoContinue.svg)](https://github.com/sunnamed434/AutoContinue/releases)
-[![Build Status](https://github.com/sunnamed434/AutoContinue/workflows/CI/badge.svg)](https://github.com/sunnamed434/AutoContinue/actions)
+[![Build Status](https://github.com/sunnamed434/AutoContinue/workflows/CI%2FCD/badge.svg)](https://github.com/sunnamed434/AutoContinue/actions)
 
 Ever been watching a YouTube video and that annoying "Continue watching?" popup keeps interrupting you? AutoContinue fixes that by automatically clicking the continue button so you can watch without interruptions.
 

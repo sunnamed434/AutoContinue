@@ -1,0 +1,123 @@
+name: 'AutoContinue Project Build'
+description: 'Build AutoContinue browser extension for all platforms'
+inputs:
+  version:
+    description: 'Version to build'
+    required: true
+  node-version:
+    description: 'Node.js version to use'
+    required: false
+    default: '18'
+outputs:
+  chrome-zip:
+    description: 'Path to Chrome extension zip'
+    value: ${{ steps.build.outputs.chrome-zip }}
+  firefox-zip:
+    description: 'Path to Firefox extension zip'
+    value: ${{ steps.build.outputs.firefox-zip }}
+  safari-zip:
+    description: 'Path to Safari extension zip'
+    value: ${{ steps.build.outputs.safari-zip }}
+  source-zip:
+    description: 'Path to source code zip'
+    value: ${{ steps.build.outputs.source-zip }}
+  generated-version:
+    description: 'Generated version string'
+    value: ${{ steps.version.outputs.version }}
+  is-prerelease:
+    description: 'Whether this is a prerelease'
+    value: ${{ steps.prerelease.outputs.is_prerelease }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Create version
+      id: version
+      shell: bash
+      run: echo "version=$(git describe --tags `git rev-list --tags --max-count=1`)+$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+    - name: Check Prerelease
+      id: prerelease
+      shell: bash
+      run: "if ${{ contains(steps.version.outputs.version, '-') }}; then
+              echo is_prerelease=true >> $GITHUB_OUTPUT;
+            else
+              echo is_prerelease=false >> $GITHUB_OUTPUT;
+            fi"
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      shell: bash
+      run: npm ci
+        
+    - name: Update version
+      shell: bash
+      run: node scripts/version.js
+      env:
+        VERSION: ${{ inputs.version }}
+        
+    - name: Run linter
+      shell: bash
+      run: npm run lint
+        
+    - name: Run tests with coverage
+      shell: bash
+      run: npm run test:ci
+
+    - name: Enforce coverage threshold
+      shell: bash
+      run: |
+        if [ ! -f coverage/coverage-summary.json ]; then
+          echo "coverage-summary.json not found; did tests run with coverage?";
+          ls -la coverage || true;
+          exit 1;
+        fi
+        COVERAGE=$(node -e "const fs=require('fs');const c=JSON.parse(fs.readFileSync('coverage/coverage-summary.json','utf8'));console.log(c.total.lines.pct)")
+        echo "Current coverage: ${COVERAGE}%"
+        echo "Required coverage: 70%"
+        awk "BEGIN {exit (${COVERAGE}>=70)?0:1}"
+        if [ $? -ne 0 ]; then
+          echo "❌ Coverage ${COVERAGE}% is below the required 70%"; exit 1;
+        else
+          echo "✅ Coverage ${COVERAGE}% meets the required 70%";
+        fi
+
+    - name: Build all platforms
+      id: build
+      shell: bash
+      run: |
+        npm run build:chrome
+        npm run build:firefox
+        npm run build:safari
+        
+        # Create release directory
+        mkdir -p release
+        
+        # Package Chrome extension
+        cd dist
+        zip -r ../release/AutoContinue-Chrome-${{ inputs.version }}.zip .
+        cd ..
+        
+        # Package Firefox extension
+        cd dist
+        zip -r ../release/AutoContinue-Firefox-${{ inputs.version }}.zip .
+        cd ..
+        
+        # Package Safari extension
+        cd dist
+        zip -r ../release/AutoContinue-Safari-${{ inputs.version }}.zip .
+        cd ..
+        
+        # Create source archive
+        git archive --format=zip --output=release/AutoContinue-Source-${{ inputs.version }}.zip HEAD
+        
+        # Set outputs
+        echo "chrome-zip=release/AutoContinue-Chrome-${{ inputs.version }}.zip" >> $GITHUB_OUTPUT
+        echo "firefox-zip=release/AutoContinue-Firefox-${{ inputs.version }}.zip" >> $GITHUB_OUTPUT
+        echo "safari-zip=release/AutoContinue-Safari-${{ inputs.version }}.zip" >> $GITHUB_OUTPUT
+        echo "source-zip=release/AutoContinue-Source-${{ inputs.version }}.zip" >> $GITHUB_OUTPUT
