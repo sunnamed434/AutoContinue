@@ -146,7 +146,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0  # Fetch all history for proper tagging
           
@@ -174,7 +174,7 @@ jobs:
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT }}
           name: AutoContinue ${{ steps.build.outputs.generated-version }}
           tag: ${{ github.ref_name }} 
           body: |
