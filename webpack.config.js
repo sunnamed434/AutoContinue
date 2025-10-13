@@ -110,23 +110,19 @@ module.exports = (env, argv) => {
           // Copy only essential icons
           {
             from: 'images/icon16.png',
-            to: 'images/icon16.png',
-            noErrorOnMissing: true
+            to: 'images/icon16.png'
           },
           {
             from: 'images/icon32.png',
-            to: 'images/icon32.png',
-            noErrorOnMissing: true
+            to: 'images/icon32.png'
           },
           {
             from: 'images/icon48.png',
-            to: 'images/icon48.png',
-            noErrorOnMissing: true
+            to: 'images/icon48.png'
           },
           {
             from: 'images/icon128.png',
-            to: 'images/icon128.png',
-            noErrorOnMissing: true
+            to: 'images/icon128.png'
           },
           
           // Copy Safari-specific files
