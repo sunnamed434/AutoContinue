@@ -120,6 +120,10 @@ module.exports = (env, argv) => {
             from: 'images/icon128.png',
             to: 'images/icon128.png'
           },
+          {
+            from: 'images/settings-gear.svg',
+            to: 'images/settings-gear.svg'
+          },
           
           ...(browser === 'safari' ? [
             {

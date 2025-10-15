@@ -27,6 +27,7 @@ Thank you for your interest in contributing to AutoContinue! This document provi
    ```bash
    npm run test
    npm run lint
+   npm run validate:locales
    npm run build
    ```
 
@@ -99,6 +100,9 @@ npm run build:watch
 
 # Clean build directory
 npm run clean
+
+# Validate localization files
+npm run validate:locales
 ```
 
 ## Code Style

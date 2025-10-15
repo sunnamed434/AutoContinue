@@ -83,6 +83,7 @@ npm run build:safari    # Safari
 npm run lint        # Check for issues
 npm run lint:fix    # Fix issues automatically
 npm run format      # Format code
+npm run validate:locales  # Validate localization files
 ```
 
 ## Contributing

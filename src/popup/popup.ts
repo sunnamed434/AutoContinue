@@ -98,7 +98,7 @@ class PopupController {
         autoContinueCount: config.autoContinueCount,
         timeSaved: config.timeSaved,
         lastReset: config.lastReset,
-        theme: systemTheme,
+        theme: config.theme || systemTheme,
       };
 
       this.updateUI(stats);
@@ -135,11 +135,19 @@ class PopupController {
     chrome.storage.onChanged.addListener((changes, namespace) => {
       if (namespace === 'local') {
         try {
+          if (changes.enabled) {
+            this.enabledToggle.checked = changes.enabled.newValue;
+            this.updateStatusText(changes.enabled.newValue);
+          }
           if (changes.autoContinueCount) {
             this.continueCount.textContent = `${changes.autoContinueCount.newValue} times`;
           }
           if (changes.timeSaved) {
             this.timeSaved.textContent = formatTime(changes.timeSaved.newValue);
+          }
+          if (changes.theme) {
+            this.themeToggle.checked = changes.theme.newValue === 'dark';
+            this.applyTheme(changes.theme.newValue);
           }
         } catch (error) {
           console.error('[AutoContinue Popup] Error updating stats from storage changes:', error);
@@ -273,6 +281,7 @@ class PopupController {
       ]);
       if (config) {
         config.enabled = enabled;
+        await chrome.storage.local.set(config);
       }
 
       this.updateStatusText(enabled);
@@ -280,8 +289,10 @@ class PopupController {
       try {
         if (!chrome || !chrome.tabs || !chrome.tabs.query) return;
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab?.id && chrome.tabs.sendMessage) {
-          chrome.tabs.sendMessage(tab.id, { action: 'toggle', enabled });
+        if (tab?.id && tab.url && chrome.tabs.sendMessage) {
+          if (tab.url.includes('youtube.com') || tab.url.includes('music.youtube.com')) {
+            chrome.tabs.sendMessage(tab.id, { action: 'toggle', enabled });
+          }
         }
       } catch (error) {
         console.error('Failed to notify content script:', error);

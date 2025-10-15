@@ -43,7 +43,32 @@ class OptionsController {
     }
   }
 
-  private setupConfigListener(): void {}
+  private setupConfigListener(): void {
+    if (!chrome || !chrome.storage || !chrome.storage.onChanged) return;
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+      if (namespace === 'local') {
+        try {
+          if (changes.enabled) {
+            this.enabledToggle.checked = changes.enabled.newValue;
+          }
+          if (changes.showNotifications) {
+            this.showNotificationsToggle.checked = changes.showNotifications.newValue;
+          }
+          if (changes.idleTimeout) {
+            this.idleTimeoutInput.value = changes.idleTimeout.newValue.toString();
+          }
+          if (changes.autoClickDelay) {
+            this.autoClickDelayInput.value = changes.autoClickDelay.newValue.toString();
+          }
+          if (changes.enableYouTubeMusic) {
+            this.enableYouTubeMusicToggle.checked = changes.enableYouTubeMusic.newValue;
+          }
+        } catch (error) {
+          console.error('[AutoContinue Options] Error updating UI from storage changes:', error);
+        }
+      }
+    });
+  }
 
   private initializeElements(): void {
     this.enabledToggle = document.getElementById('enabled') as HTMLInputElement;

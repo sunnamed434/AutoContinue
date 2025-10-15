@@ -76,8 +76,8 @@
     "description": "Button to reset counters"
   },
   "exportData": {
-    "message": "Export Data",
-    "description": "Button to export data"
+    "message": "Download Info",
+    "description": "Button to download info"
   },
   "about": {
     "message": "About",
