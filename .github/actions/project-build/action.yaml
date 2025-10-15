@@ -18,9 +18,6 @@ outputs:
   safari-zip:
     description: 'Path to Safari extension zip'
     value: ${{ steps.build.outputs.safari-zip }}
-  source-zip:
-    description: 'Path to source code zip'
-    value: ${{ steps.build.outputs.source-zip }}
   generated-version:
     description: 'Generated version string'
     value: ${{ steps.version.outputs.version }}
@@ -99,11 +96,7 @@ runs:
         zip -r ../release/AutoContinue-Safari-${{ inputs.version }}.zip .
         cd ..
         
-        # Create source archive
-        git archive --format=zip --output=release/AutoContinue-Source-${{ inputs.version }}.zip HEAD
-        
         # Set outputs
         echo "chrome-zip=release/AutoContinue-Chrome-${{ inputs.version }}.zip" >> $GITHUB_OUTPUT
         echo "firefox-zip=release/AutoContinue-Firefox-${{ inputs.version }}.zip" >> $GITHUB_OUTPUT
         echo "safari-zip=release/AutoContinue-Safari-${{ inputs.version }}.zip" >> $GITHUB_OUTPUT
-        echo "source-zip=release/AutoContinue-Source-${{ inputs.version }}.zip" >> $GITHUB_OUTPUT

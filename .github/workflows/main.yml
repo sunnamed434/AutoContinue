@@ -162,9 +162,6 @@ jobs:
             - **Firefox**: [AutoContinue-Firefox-${{ steps.build.outputs.generated-version }}.zip](https://github.com/sunnamed434/AutoContinue/releases/download/${{ github.ref_name }}/AutoContinue-Firefox-${{ steps.build.outputs.generated-version }}.zip)
             - **Safari**: [AutoContinue-Safari-${{ steps.build.outputs.generated-version }}.zip](https://github.com/sunnamed434/AutoContinue/releases/download/${{ github.ref_name }}/AutoContinue-Safari-${{ steps.build.outputs.generated-version }}.zip)
             
-            ### Source Code
-            - **Source Code**: [AutoContinue-Source-${{ steps.build.outputs.generated-version }}.zip](https://github.com/sunnamed434/AutoContinue/releases/download/${{ github.ref_name }}/AutoContinue-Source-${{ steps.build.outputs.generated-version }}.zip)
-            
             ## Installation
             
             1. Download the appropriate extension for your browser
@@ -177,7 +174,6 @@ jobs:
             release/AutoContinue-Chrome-${{ steps.build.outputs.generated-version }}.zip
             release/AutoContinue-Firefox-${{ steps.build.outputs.generated-version }}.zip
             release/AutoContinue-Safari-${{ steps.build.outputs.generated-version }}.zip
-            release/AutoContinue-Source-${{ steps.build.outputs.generated-version }}.zip
           draft: true
           allowUpdates: true
           prerelease: ${{ steps.build.outputs.is-prerelease }}
