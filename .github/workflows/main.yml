@@ -105,7 +105,7 @@ jobs:
         with:
           token: ${{ secrets.PAT }}
           name: AutoContinue ${{ steps.build.outputs.generated-version }}
-          tag: ${{ github.ref_name }} 
+          tag: ${{ steps.build.outputs.generated-version }} 
           body: |
             
             ## Installation
@@ -117,9 +117,9 @@ jobs:
             5. Click "Load unpacked" and select the extracted folder
             
           artifacts: |
-            release/AutoContinue-Chrome-${{ github.ref_name }}.zip
-            release/AutoContinue-Firefox-${{ github.ref_name }}.zip
-            release/AutoContinue-Safari-${{ github.ref_name }}.zip
+            release/AutoContinue-Chrome-${{ steps.build.outputs.generated-version }}.zip
+            release/AutoContinue-Firefox-${{ steps.build.outputs.generated-version }}.zip
+            release/AutoContinue-Safari-${{ steps.build.outputs.generated-version }}.zip
           draft: true
           allowUpdates: true
           prerelease: ${{ steps.build.outputs.is-prerelease }}
