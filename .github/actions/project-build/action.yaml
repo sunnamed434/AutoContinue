@@ -8,15 +8,19 @@ inputs:
     description: 'Node.js version to use'
     required: false
     default: '18'
+  create-archives:
+    description: 'Whether to create zip archives (true) or just build folders (false)'
+    required: false
+    default: 'true'
 outputs:
   chrome-zip:
-    description: 'Path to Chrome extension zip'
+    description: 'Path to Chrome extension zip (if create-archives=true) or folder (if create-archives=false)'
     value: ${{ steps.build.outputs.chrome-zip }}
   firefox-zip:
-    description: 'Path to Firefox extension zip'
+    description: 'Path to Firefox extension zip (if create-archives=true) or folder (if create-archives=false)'
     value: ${{ steps.build.outputs.firefox-zip }}
   safari-zip:
-    description: 'Path to Safari extension zip'
+    description: 'Path to Safari extension zip (if create-archives=true) or folder (if create-archives=false)'
     value: ${{ steps.build.outputs.safari-zip }}
   generated-version:
     description: 'Generated version string'
@@ -74,29 +78,44 @@ runs:
       id: build
       shell: bash
       run: |
+        # Build Chrome
         npm run build:chrome
+        mv dist dist-chrome
+        
+        # Build Firefox
         npm run build:firefox
+        mv dist dist-firefox
+        
+        # Build Safari
         npm run build:safari
+        mv dist dist-safari
         
-        # Create release directory
-        mkdir -p release
-        
-        # Package Chrome extension
-        cd dist
-        zip -r ../release/AutoContinue-Chrome-${{ inputs.version }}.zip .
-        cd ..
-        
-        # Package Firefox extension
-        cd dist
-        zip -r ../release/AutoContinue-Firefox-${{ inputs.version }}.zip .
-        cd ..
-        
-        # Package Safari extension
-        cd dist
-        zip -r ../release/AutoContinue-Safari-${{ inputs.version }}.zip .
-        cd ..
-        
-        # Set outputs
-        echo "chrome-zip=release/AutoContinue-Chrome-${{ inputs.version }}.zip" >> $GITHUB_OUTPUT
-        echo "firefox-zip=release/AutoContinue-Firefox-${{ inputs.version }}.zip" >> $GITHUB_OUTPUT
-        echo "safari-zip=release/AutoContinue-Safari-${{ inputs.version }}.zip" >> $GITHUB_OUTPUT
+        # Create archives if requested
+        if [ "${{ inputs.create-archives }}" = "true" ]; then
+          mkdir -p release
+          
+          # Package Chrome extension
+          cd dist-chrome
+          zip -r ../release/AutoContinue-Chrome-${{ inputs.version }}.zip .
+          cd ..
+          
+          # Package Firefox extension
+          cd dist-firefox
+          zip -r ../release/AutoContinue-Firefox-${{ inputs.version }}.zip .
+          cd ..
+          
+          # Package Safari extension
+          cd dist-safari
+          zip -r ../release/AutoContinue-Safari-${{ inputs.version }}.zip .
+          cd ..
+          
+          # Set outputs for archives
+          echo "chrome-zip=release/AutoContinue-Chrome-${{ inputs.version }}.zip" >> $GITHUB_OUTPUT
+          echo "firefox-zip=release/AutoContinue-Firefox-${{ inputs.version }}.zip" >> $GITHUB_OUTPUT
+          echo "safari-zip=release/AutoContinue-Safari-${{ inputs.version }}.zip" >> $GITHUB_OUTPUT
+        else
+          # Set outputs for folders
+          echo "chrome-zip=dist-chrome" >> $GITHUB_OUTPUT
+          echo "firefox-zip=dist-firefox" >> $GITHUB_OUTPUT
+          echo "safari-zip=dist-safari" >> $GITHUB_OUTPUT
+        fi

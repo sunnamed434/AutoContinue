@@ -60,56 +60,41 @@ jobs:
       run: npm run test:ci
       continue-on-error: true
 
-    - name: Build extensions (Chrome/Firefox/Safari)
-      if: matrix.node-version == '20.x'
-      run: |
-        npm run build:chrome
-        npm run build:firefox
-        npm run build:safari
+    - name: Build nightly bundles via composite action
+      id: nightly
+      if: matrix.node-version == '20.x' && github.event_name != 'create'
+      uses: ./.github/actions/project-build
+      with:
+        version: nightly-${{ github.sha }}
+        node-version: '20'
+        create-archives: 'false' # Only for nightly builds, to prevent double zips being uploaded
 
-    - name: Package Chrome build
-      if: matrix.node-version == '20.x'
-      run: |
-        mkdir -p artifacts
-        cd dist
-        zip -r ../artifacts/AutoContinue-Chrome-${{ github.sha }}.zip . -x "*.map"
-        cd ..
-
-    - name: Package Firefox build
-      if: matrix.node-version == '20.x'
-      run: |
-        cd dist
-        zip -r ../artifacts/AutoContinue-Firefox-${{ github.sha }}.zip . -x "*.map"
-        cd ..
-
-    - name: Package Safari build
-      if: matrix.node-version == '20.x'
-      run: |
-        cd dist
-        zip -r ../artifacts/AutoContinue-Safari-${{ github.sha }}.zip . -x "*.map"
-        cd ..
-      
-
-    - name: Upload Chrome artifact
-      if: matrix.node-version == '20.x'
+    - name: Upload nightly artifact - Chrome
+      if: matrix.node-version == '20.x' && github.event_name != 'create'
       uses: actions/upload-artifact@v4
       with:
-        name: AutoContinue-Chrome-${{ github.sha }}
-        path: artifacts/AutoContinue-Chrome-${{ github.sha }}.zip
+        name: AutoContinue-Chrome-nightly-${{ github.sha }}
+        path: ${{ steps.nightly.outputs.chrome-zip }}/**
+        if-no-files-found: error
+        retention-days: 7
 
-    - name: Upload Firefox artifact
-      if: matrix.node-version == '20.x'
+    - name: Upload nightly artifact - Firefox
+      if: matrix.node-version == '20.x' && github.event_name != 'create'
       uses: actions/upload-artifact@v4
       with:
-        name: AutoContinue-Firefox-${{ github.sha }}
-        path: artifacts/AutoContinue-Firefox-${{ github.sha }}.zip
+        name: AutoContinue-Firefox-nightly-${{ github.sha }}
+        path: ${{ steps.nightly.outputs.firefox-zip }}/**
+        if-no-files-found: error
+        retention-days: 7
 
-    - name: Upload Safari artifact
-      if: matrix.node-version == '20.x'
+    - name: Upload nightly artifact - Safari
+      if: matrix.node-version == '20.x' && github.event_name != 'create'
       uses: actions/upload-artifact@v4
       with:
-        name: AutoContinue-Safari-${{ github.sha }}
-        path: artifacts/AutoContinue-Safari-${{ github.sha }}.zip
+        name: AutoContinue-Safari-nightly-${{ github.sha }}
+        path: ${{ steps.nightly.outputs.safari-zip }}/**
+        if-no-files-found: error
+        retention-days: 7
 
   release:
     name: Create Release
