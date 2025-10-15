@@ -107,16 +107,10 @@ jobs:
           name: AutoContinue ${{ steps.build.outputs.generated-version }}
           tag: ${{ github.ref_name }} 
           body: |
-            ## Downloads
-            
-            ### Browser Extensions
-            - **Chrome/Chromium**: [AutoContinue-Chrome-${{ github.ref_name }}.zip](https://github.com/sunnamed434/AutoContinue/releases/download/${{ github.ref_name }}/AutoContinue-Chrome-${{ github.ref_name }}.zip)
-            - **Firefox**: [AutoContinue-Firefox-${{ github.ref_name }}.zip](https://github.com/sunnamed434/AutoContinue/releases/download/${{ github.ref_name }}/AutoContinue-Firefox-${{ github.ref_name }}.zip)
-            - **Safari**: [AutoContinue-Safari-${{ github.ref_name }}.zip](https://github.com/sunnamed434/AutoContinue/releases/download/${{ github.ref_name }}/AutoContinue-Safari-${{ github.ref_name }}.zip)
             
             ## Installation
             
-            1. Download the appropriate extension for your browser
+            1. Download the appropriate extension for your browser (see `Assets` below)
             2. Extract the ZIP file
             3. Open your browser's extension management page
             4. Enable "Developer mode"
@@ -129,4 +123,3 @@ jobs:
           draft: true
           allowUpdates: true
           prerelease: ${{ steps.build.outputs.is-prerelease }}
-          generateReleaseNotes: true
