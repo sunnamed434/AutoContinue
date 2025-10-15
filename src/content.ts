@@ -135,7 +135,7 @@ function injectAutoconfirmScript(): void {
       return;
     }
 
-      autoconfirmScriptInjected = true;
+    autoconfirmScriptInjected = true;
     console.log('[AutoContinue] Autoconfirm functionality enabled');
   } catch (error) {
     if (error instanceof Error && error.message.includes('Extension context invalidated')) {
@@ -409,12 +409,13 @@ function setupAutoconfirmListeners(): void {
         mutation.addedNodes.forEach(node => {
           if (node.nodeType === Node.ELEMENT_NODE) {
             const element = node as Element;
-            if (element.matches && (
-              element.matches('yt-confirm-dialog-renderer') ||
-              element.matches('ytmusic-you-there-renderer') ||
-              element.querySelector('yt-confirm-dialog-renderer') ||
-              element.querySelector('ytmusic-you-there-renderer')
-            )) {
+            if (
+              element.matches &&
+              (element.matches('yt-confirm-dialog-renderer') ||
+                element.matches('ytmusic-you-there-renderer') ||
+                element.querySelector('yt-confirm-dialog-renderer') ||
+                element.querySelector('ytmusic-you-there-renderer'))
+            ) {
               console.log('[AutoContinue] Popup detected via mutation observer');
               if (isAutoconfirmEnabled && isUserIdle()) {
                 setTimeout(async () => {

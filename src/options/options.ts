@@ -148,7 +148,6 @@ class OptionsController {
       }
     });
 
-
     this.resetStatsBtn.addEventListener('click', async () => {
       if (confirm('Are you sure you want to reset all statistics? This action cannot be undone.')) {
         const config = await chrome.storage.local.get();

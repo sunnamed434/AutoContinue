@@ -308,8 +308,6 @@ class PopupController {
       }
     });
 
-
-
     this.openOptionsBtn.addEventListener('click', () => {
       if (chrome?.runtime?.openOptionsPage) {
         chrome.runtime.openOptionsPage();
