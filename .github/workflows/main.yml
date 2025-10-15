@@ -100,20 +100,6 @@ jobs:
           version: ${{ github.ref_name }}
           node-version: '18'
           
-      - name: Generate changelog
-        id: changelog
-        run: |
-          # Get commits since last tag
-          if git describe --tags --abbrev=0 HEAD~1 >/dev/null 2>&1; then
-            PREV_TAG=$(git describe --tags --abbrev=0 HEAD~1)
-            CHANGELOG=$(git log --pretty=format:"- %s" $PREV_TAG..HEAD)
-          else
-            CHANGELOG=$(git log --pretty=format:"- %s" --max-count=20)
-          fi
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGELOG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-          
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
@@ -121,16 +107,12 @@ jobs:
           name: AutoContinue ${{ steps.build.outputs.generated-version }}
           tag: ${{ github.ref_name }} 
           body: |
-            ## What's New in ${{ steps.build.outputs.generated-version }}
-            
-            ${{ steps.changelog.outputs.changelog }}
-            
             ## Downloads
             
             ### Browser Extensions
-            - **Chrome/Chromium**: [AutoContinue-Chrome-${{ steps.build.outputs.generated-version }}.zip](https://github.com/sunnamed434/AutoContinue/releases/download/${{ github.ref_name }}/AutoContinue-Chrome-${{ steps.build.outputs.generated-version }}.zip)
-            - **Firefox**: [AutoContinue-Firefox-${{ steps.build.outputs.generated-version }}.zip](https://github.com/sunnamed434/AutoContinue/releases/download/${{ github.ref_name }}/AutoContinue-Firefox-${{ steps.build.outputs.generated-version }}.zip)
-            - **Safari**: [AutoContinue-Safari-${{ steps.build.outputs.generated-version }}.zip](https://github.com/sunnamed434/AutoContinue/releases/download/${{ github.ref_name }}/AutoContinue-Safari-${{ steps.build.outputs.generated-version }}.zip)
+            - **Chrome/Chromium**: [AutoContinue-Chrome-${{ github.ref_name }}.zip](https://github.com/sunnamed434/AutoContinue/releases/download/${{ github.ref_name }}/AutoContinue-Chrome-${{ github.ref_name }}.zip)
+            - **Firefox**: [AutoContinue-Firefox-${{ github.ref_name }}.zip](https://github.com/sunnamed434/AutoContinue/releases/download/${{ github.ref_name }}/AutoContinue-Firefox-${{ github.ref_name }}.zip)
+            - **Safari**: [AutoContinue-Safari-${{ github.ref_name }}.zip](https://github.com/sunnamed434/AutoContinue/releases/download/${{ github.ref_name }}/AutoContinue-Safari-${{ github.ref_name }}.zip)
             
             ## Installation
             
@@ -141,9 +123,10 @@ jobs:
             5. Click "Load unpacked" and select the extracted folder
             
           artifacts: |
-            release/AutoContinue-Chrome-${{ steps.build.outputs.generated-version }}.zip
-            release/AutoContinue-Firefox-${{ steps.build.outputs.generated-version }}.zip
-            release/AutoContinue-Safari-${{ steps.build.outputs.generated-version }}.zip
+            release/AutoContinue-Chrome-${{ github.ref_name }}.zip
+            release/AutoContinue-Firefox-${{ github.ref_name }}.zip
+            release/AutoContinue-Safari-${{ github.ref_name }}.zip
           draft: true
           allowUpdates: true
           prerelease: ${{ steps.build.outputs.is-prerelease }}
+          generateReleaseNotes: true
