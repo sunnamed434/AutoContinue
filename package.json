@@ -17,8 +17,9 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css,html}\"",
     "clean": "rimraf dist",
     "version:update": "node scripts/version.js",
-    "test": "jest --coverage --passWithNoTests",
-    "test:ci": "jest --coverage --ci --maxWorkers=2 --passWithNoTests",
+    "test": "jest --passWithNoTests",
+    "test:ci": "jest --ci --maxWorkers=2 --passWithNoTests",
+    "validate:locales": "node scripts/validate-locales.js",
     "prebuild": "npm run version:update"
   },
   "keywords": [

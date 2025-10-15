@@ -1,8 +1,5 @@
 import { DEFAULT_CONFIG } from './constants/defaults';
 
-const hiddenYouTubeTabs = new Set<number>();
-const monitoringIntervals = new Map<number, number>();
-
 chrome.runtime.onInstalled.addListener(details => {
   try {
     if (details.reason === 'install') {
@@ -16,7 +13,6 @@ chrome.runtime.onInstalled.addListener(details => {
           idleTimeout: DEFAULT_CONFIG.idleTimeout,
           autoClickDelay: DEFAULT_CONFIG.autoClickDelay,
           enableYouTubeMusic: DEFAULT_CONFIG.enableYouTubeMusic,
-          testMode: DEFAULT_CONFIG.testMode,
         })
         .then(() => {
           console.log('[AutoContinue] Default settings initialized');
@@ -34,7 +30,7 @@ chrome.runtime.onInstalled.addListener(details => {
   }
 });
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse): boolean => {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse): boolean => {
   try {
     switch (message.action) {
       case 'toggle':
@@ -46,12 +42,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse): boolean =>
       case 'getSettings':
         handleGetSettings(sendResponse);
         return true;
-      case 'tabHidden':
-        handleTabHidden(sender.tab?.id);
-        break;
-      case 'tabVisible':
-        handleTabVisible(sender.tab?.id);
-        break;
+      case 'checkVideo':
+        // Forward to content script
+        return true;
       default:
         console.warn('[AutoContinue] Unknown message action:', message.action);
     }
@@ -88,7 +81,7 @@ async function handleStatsUpdate(): Promise<void> {
         timeSaved: newTimeSaved,
       });
 
-      console.log('[AutoContinue] Statistics updated atomically:', {
+      console.log('[AutoContinue] Local statistics updated:', {
         count: newCount,
         timeSaved: newTimeSaved,
       });
@@ -96,7 +89,7 @@ async function handleStatsUpdate(): Promise<void> {
     } catch (error) {
       retryCount++;
       console.error(
-        `[AutoContinue] Failed to update statistics (attempt ${retryCount}/${maxRetries}):`,
+        `[AutoContinue] Failed to update local statistics (attempt ${retryCount}/${maxRetries}):`,
         error
       );
 
@@ -128,76 +121,6 @@ async function handleGetSettings(
     sendResponse({});
   }
 }
-
-async function handleTabHidden(tabId: number | undefined): Promise<void> {
-  if (!tabId) return;
-
-  try {
-    const tab = await chrome.tabs.get(tabId);
-    const isYouTube = tab.url?.includes('youtube.com') || tab.url?.includes('music.youtube.com');
-
-    if (isYouTube) {
-      hiddenYouTubeTabs.add(tabId);
-      startMonitoringTab(tabId);
-    }
-  } catch (error) {
-    console.error(`[AutoContinue] Failed to handle tab hidden for tab ${tabId}:`, error);
-  }
-}
-
-async function handleTabVisible(tabId: number | undefined): Promise<void> {
-  if (!tabId) return;
-
-  try {
-    hiddenYouTubeTabs.delete(tabId);
-    stopMonitoringTab(tabId);
-  } catch (error) {
-    console.error(`[AutoContinue] Failed to handle tab visible for tab ${tabId}:`, error);
-  }
-}
-
-function startMonitoringTab(tabId: number): void {
-  stopMonitoringTab(tabId);
-
-  const interval = setInterval(async () => {
-    if (!hiddenYouTubeTabs.has(tabId)) {
-      clearInterval(interval as unknown as number);
-      monitoringIntervals.delete(tabId);
-      return;
-    }
-
-    try {
-      await chrome.scripting.executeScript({
-        target: { tabId },
-        files: ['js/autoconfirm.js'],
-      });
-    } catch (error) {
-      console.error(`[AutoContinue] Failed to inject script into tab ${tabId}:`, error);
-      hiddenYouTubeTabs.delete(tabId);
-      clearInterval(interval as unknown as number);
-      monitoringIntervals.delete(tabId);
-    }
-  }, 3000) as unknown as number;
-
-  monitoringIntervals.set(tabId, interval);
-}
-
-function stopMonitoringTab(tabId: number): void {
-  const interval = monitoringIntervals.get(tabId);
-  if (interval) {
-    clearInterval(interval);
-    monitoringIntervals.delete(tabId);
-  }
-}
-
-chrome.tabs.onRemoved.addListener(tabId => {
-  try {
-    hiddenYouTubeTabs.delete(tabId);
-    stopMonitoringTab(tabId);
-  } catch (error) {
-    console.error(`[AutoContinue] Error cleaning up tab ${tabId}:`, error);
-  }
-});
 
 self.addEventListener('error', event => {
   console.error('[AutoContinue] Global error in background script:', event.error);

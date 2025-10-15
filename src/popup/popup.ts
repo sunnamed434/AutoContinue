@@ -6,7 +6,6 @@ interface AutoContinueStats {
   timeSaved: number;
   lastReset: number;
   theme: 'light' | 'dark';
-  testMode: boolean;
 }
 
 class PopupController {
@@ -14,13 +13,10 @@ class PopupController {
   private statusText!: HTMLElement;
   private continueCount!: HTMLElement;
   private timeSaved!: HTMLElement;
-  private testPopupBtn!: HTMLButtonElement;
   private openOptionsBtn!: HTMLButtonElement;
   private themeToggle!: HTMLInputElement;
   private videoStatus!: HTMLElement;
   private refreshTabBtn!: HTMLButtonElement;
-  private copyDebugLogsBtn!: HTMLButtonElement;
-  private testSection!: HTMLElement;
 
   constructor() {
     try {
@@ -70,24 +66,25 @@ class PopupController {
     this.statusText = document.getElementById('status-text') as HTMLElement;
     this.continueCount = document.getElementById('continue-count') as HTMLElement;
     this.timeSaved = document.getElementById('time-saved') as HTMLElement;
-    this.testPopupBtn = document.getElementById('test-popup') as HTMLButtonElement;
     this.openOptionsBtn = document.getElementById('open-options') as HTMLButtonElement;
     this.themeToggle = document.getElementById('theme-toggle') as HTMLInputElement;
     this.videoStatus = document.getElementById('video-status') as HTMLElement;
     this.refreshTabBtn = document.getElementById('refresh-tab') as HTMLButtonElement;
-    this.copyDebugLogsBtn = document.getElementById('copy-debug-logs') as HTMLButtonElement;
-    this.testSection = document.getElementById('test-section') as HTMLElement;
   }
 
   private async loadSettings(): Promise<void> {
     try {
+      if (!chrome || !chrome.storage || !chrome.storage.local) {
+        console.warn('[AutoContinue Popup] Chrome storage API not available');
+        return;
+      }
+
       const config = await chrome.storage.local.get([
         'enabled',
         'autoContinueCount',
         'timeSaved',
         'lastReset',
         'theme',
-        'testMode',
       ]);
 
       if (!config) {
@@ -102,7 +99,6 @@ class PopupController {
         timeSaved: config.timeSaved,
         lastReset: config.lastReset,
         theme: systemTheme,
-        testMode: config.testMode,
       };
 
       this.updateUI(stats);
@@ -123,6 +119,7 @@ class PopupController {
     if (window.matchMedia) {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       mediaQuery.addEventListener('change', async e => {
+        if (!chrome || !chrome.storage || !chrome.storage.local) return;
         const result = await chrome.storage.local.get(['theme']);
         if (!result['theme']) {
           const newTheme = e.matches ? 'dark' : 'light';
@@ -134,11 +131,12 @@ class PopupController {
   }
 
   private setupStorageListener(): void {
+    if (!chrome || !chrome.storage || !chrome.storage.onChanged) return;
     chrome.storage.onChanged.addListener((changes, namespace) => {
       if (namespace === 'local') {
         try {
           if (changes.autoContinueCount) {
-            this.continueCount.textContent = changes.autoContinueCount.newValue.toString();
+            this.continueCount.textContent = `${changes.autoContinueCount.newValue} times`;
           }
           if (changes.timeSaved) {
             this.timeSaved.textContent = formatTime(changes.timeSaved.newValue);
@@ -153,14 +151,12 @@ class PopupController {
   private updateUI(stats: AutoContinueStats): void {
     this.enabledToggle.checked = stats.enabled;
     this.updateStatusText(stats.enabled);
-    this.continueCount.textContent = stats.autoContinueCount.toString();
+    this.continueCount.textContent = `${stats.autoContinueCount} times`;
     this.timeSaved.textContent = formatTime(stats.timeSaved);
     this.themeToggle.checked = stats.theme === 'dark';
     this.applyTheme(stats.theme);
-    this.testSection.style.display = stats.testMode ? 'block' : 'none';
-    this.copyDebugLogsBtn.style.display = stats.testMode ? 'block' : 'none';
 
-    const manifest = chrome.runtime.getManifest();
+    const manifest = chrome?.runtime?.getManifest?.() || { version: 'unknown' };
     const versionElement = document.querySelector('.version');
     if (versionElement) {
       versionElement.textContent = `v${manifest.version}`;
@@ -180,6 +176,7 @@ class PopupController {
     const maxRetries = 3;
 
     try {
+      if (!chrome || !chrome.tabs || !chrome.tabs.query) return;
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (tab?.id && tab.url) {
         const isYouTube = tab.url.includes('youtube.com') || tab.url.includes('music.youtube.com');
@@ -191,12 +188,16 @@ class PopupController {
         try {
           if (retryCount === 0) {
             try {
-              await chrome.scripting.executeScript({
-                target: { tabId: tab.id },
-                files: ['js/content.js'],
-              });
-              console.log('[AutoContinue] Content script injected manually');
-              await new Promise(resolve => setTimeout(resolve, 500));
+              if (chrome.scripting && chrome.scripting.executeScript) {
+                await chrome.scripting.executeScript({
+                  target: { tabId: tab.id },
+                  files: ['js/content.js'],
+                });
+                console.log('[AutoContinue] Content script injected manually');
+                await new Promise(resolve => setTimeout(resolve, 500));
+              } else {
+                console.log('[AutoContinue] Scripting API not available');
+              }
             } catch (injectError) {
               console.log('[AutoContinue] Could not inject content script:', injectError);
             }
@@ -262,13 +263,13 @@ class PopupController {
     this.enabledToggle.addEventListener('change', async () => {
       const enabled = this.enabledToggle.checked;
 
+      if (!chrome || !chrome.storage || !chrome.storage.local) return;
       const config = await chrome.storage.local.get([
         'enabled',
         'autoContinueCount',
         'timeSaved',
         'lastReset',
         'theme',
-        'testMode',
       ]);
       if (config) {
         config.enabled = enabled;
@@ -277,8 +278,9 @@ class PopupController {
       this.updateStatusText(enabled);
 
       try {
+        if (!chrome || !chrome.tabs || !chrome.tabs.query) return;
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab?.id) {
+        if (tab?.id && chrome.tabs.sendMessage) {
           chrome.tabs.sendMessage(tab.id, { action: 'toggle', enabled });
         }
       } catch (error) {
@@ -288,14 +290,16 @@ class PopupController {
 
     this.themeToggle.addEventListener('change', async () => {
       const theme = this.themeToggle.checked ? 'dark' : 'light';
+      if (!chrome || !chrome.storage || !chrome.storage.local) return;
       await chrome.storage.local.set({ theme });
       this.applyTheme(theme);
     });
 
     this.refreshTabBtn.addEventListener('click', async () => {
       try {
+        if (!chrome || !chrome.tabs || !chrome.tabs.query) return;
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab?.id) {
+        if (tab?.id && chrome.tabs.reload) {
           await chrome.tabs.reload(tab.id);
           window.close();
         }
@@ -304,118 +308,12 @@ class PopupController {
       }
     });
 
-    this.copyDebugLogsBtn.addEventListener('click', async () => {
-      try {
-        const result = await chrome.storage.local.get([
-          'enabled',
-          'autoContinueCount',
-          'timeSaved',
-          'lastReset',
-          'theme',
-          'testMode',
-        ]);
 
-        const debugInfo = {
-          extension: 'AutoContinue',
-          version: chrome.runtime.getManifest().version,
-          timestamp: new Date().toISOString(),
-          settings: result,
-          userAgent: navigator.userAgent,
-        };
-
-        await navigator.clipboard.writeText(JSON.stringify(debugInfo, null, 2));
-        this.copyDebugLogsBtn.textContent = 'Copied!';
-        setTimeout(() => {
-          this.copyDebugLogsBtn.textContent = 'Copy Debug Logs';
-        }, 2000);
-      } catch (error) {
-        console.error('Failed to copy debug logs:', error);
-      }
-    });
-
-    this.testPopupBtn.addEventListener('click', async () => {
-      const originalText = this.testPopupBtn.textContent;
-      try {
-        this.testPopupBtn.textContent = 'Testing...';
-        this.testPopupBtn.disabled = true;
-
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        console.log('[AutoContinue Popup] Current tab:', tab);
-
-        if (tab?.id && tab.url) {
-          console.log('[AutoContinue Popup] Sending test message to content script...');
-
-          try {
-            console.log('[AutoContinue Popup] Attempting to send message to tab:', tab.id);
-            await chrome.tabs.sendMessage(tab.id, { action: 'testNativePopup' });
-            console.log(
-              '[AutoContinue Popup] Message sent successfully to content script - native test popup should appear'
-            );
-          } catch (messageError) {
-            console.log(
-              '[AutoContinue Popup] Failed to send message to content script:',
-              messageError
-            );
-            console.log('[AutoContinue Popup] Trying to inject content script manually...');
-
-            try {
-              if (
-                tab.id &&
-                tab.url &&
-                (tab.url.includes('youtube.com') || tab.url.includes('music.youtube.com'))
-              ) {
-                await chrome.scripting.executeScript({
-                  target: { tabId: tab.id },
-                  files: ['js/content.js'],
-                });
-                console.log('[AutoContinue Popup] Content script injected manually');
-              } else {
-                throw new Error('Invalid tab or non-YouTube page');
-              }
-
-              setTimeout(async () => {
-                try {
-                  if (tab.id) {
-                    await chrome.tabs.sendMessage(tab.id, { action: 'testNativePopup' });
-                  }
-                  console.log(
-                    '[AutoContinue Popup] Message sent successfully after manual injection - native test popup should appear'
-                  );
-                } catch {
-                  console.log('[AutoContinue Popup] Still failed after manual injection');
-                }
-              }, 500);
-            } catch (injectError) {
-              console.log(
-                '[AutoContinue Popup] Failed to inject content script manually:',
-                injectError
-              );
-              console.log('[AutoContinue Popup] Using fallback test popup in extension popup');
-            }
-          }
-        } else {
-          console.log('[AutoContinue Popup] No active tab, cannot show test popup');
-          alert('Please open a webpage to test the AutoContinue functionality.');
-        }
-
-        setTimeout(() => {
-          this.testPopupBtn.textContent = originalText;
-          this.testPopupBtn.disabled = false;
-        }, 1000);
-      } catch (error) {
-        console.error('[AutoContinue Popup] Failed to test popup:', error);
-        this.testPopupBtn.textContent = originalText;
-        this.testPopupBtn.disabled = false;
-      } finally {
-        setTimeout(() => {
-          this.testPopupBtn.textContent = originalText;
-          this.testPopupBtn.disabled = false;
-        }, 100);
-      }
-    });
 
     this.openOptionsBtn.addEventListener('click', () => {
-      chrome.runtime.openOptionsPage();
+      if (chrome?.runtime?.openOptionsPage) {
+        chrome.runtime.openOptionsPage();
+      }
     });
   }
 }

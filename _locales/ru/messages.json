@@ -19,9 +19,9 @@
     "message": "Отключено",
     "description": "Status when extension is disabled"
   },
-  "autoContinued": {
-    "message": "Автопродолжено:",
-    "description": "Label for auto-continue count"
+  "helpedYou": {
+    "message": "Помогло:",
+    "description": "Label for times helped"
   },
   "timeSaved": {
     "message": "Сэкономлено времени:",
@@ -55,13 +55,13 @@
     "message": "Показывать уведомление при автопродолжении видео",
     "description": "Description for notifications setting"
   },
-  "statistics": {
-    "message": "Статистика",
-    "description": "Statistics section title"
+  "usageInfo": {
+    "message": "Информация об использовании",
+    "description": "Usage info section title"
   },
-  "totalContinues": {
-    "message": "Автопродолжено",
-    "description": "Total auto-continues label"
+  "timesHelped": {
+    "message": "Раз помогло",
+    "description": "Times helped label"
   },
   "totalTimeSaved": {
     "message": "Сэкономлено времени",
@@ -71,9 +71,9 @@
     "message": "Последний сброс",
     "description": "Last reset label"
   },
-  "resetStatistics": {
-    "message": "Сбросить статистику",
-    "description": "Button to reset statistics"
+  "resetCounters": {
+    "message": "Сбросить счетчики",
+    "description": "Button to reset counters"
   },
   "exportData": {
     "message": "Экспорт данных",

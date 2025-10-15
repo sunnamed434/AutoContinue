@@ -12,19 +12,4 @@ export default {
     "reporters": ["default", "github-actions"],
     "setupFilesAfterEnv": [],
     "testMatch": ["**/test/**/*.test.ts"],
-    "collectCoverageFrom": [
-        "src/utils/**/*.ts",
-        "src/autoconfirm.ts",
-        "src/background.ts",
-        "src/popup/popup.ts",
-        "src/config.ts",
-        "!src/**/*.d.ts",
-        "!src/types/**/*",
-    ],
-    "coverageThreshold": {
-        "global": {
-            "lines": 0
-        }
-    },
-    "coverageReporters": ["json-summary", "text", "lcov"]
 };

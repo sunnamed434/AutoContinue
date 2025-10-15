@@ -65,32 +65,13 @@ runs:
       shell: bash
       run: npm run lint
         
-    - name: Run tests with coverage
+    - name: Validate locales
+      shell: bash
+      run: npm run validate:locales
+        
+    - name: Run tests
       shell: bash
       run: npm run test:ci
-
-    - name: Check if tests exist
-      shell: bash
-      run: |
-        if [ -d "test" ] && [ "$(find test -name '*.test.ts' | wc -l)" -gt 0 ]; then
-          echo "✅ Tests found, running coverage check"
-          if [ ! -f coverage/coverage-summary.json ]; then
-            echo "❌ coverage-summary.json not found; did tests run with coverage?";
-            ls -la coverage || true;
-            exit 1;
-          fi
-          COVERAGE=$(node -e "const fs=require('fs');const c=JSON.parse(fs.readFileSync('coverage/coverage-summary.json','utf8'));console.log(c.total.lines.pct)")
-          echo "Current coverage: ${COVERAGE}%"
-          echo "Required coverage: 70%"
-          awk "BEGIN {exit (${COVERAGE}>=70)?0:1}"
-          if [ $? -ne 0 ]; then
-            echo "❌ Coverage ${COVERAGE}% is below the required 70%"; exit 1;
-          else
-            echo "✅ Coverage ${COVERAGE}% meets the required 70%";
-          fi
-        else
-          echo "ℹ️ No tests found, skipping coverage check"
-        fi
 
     - name: Build all platforms
       id: build

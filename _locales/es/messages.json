@@ -19,9 +19,9 @@
     "message": "Deshabilitado",
     "description": "Status when extension is disabled"
   },
-  "autoContinued": {
-    "message": "Auto-continuado:",
-    "description": "Label for auto-continue count"
+  "helpedYou": {
+    "message": "Te ayudó:",
+    "description": "Label for times helped"
   },
   "timeSaved": {
     "message": "Tiempo ahorrado:",
@@ -55,13 +55,13 @@
     "message": "Mostrar una notificación al auto-continuar un video",
     "description": "Description for notifications setting"
   },
-  "statistics": {
-    "message": "Estadísticas",
-    "description": "Statistics section title"
+  "usageInfo": {
+    "message": "Información de uso",
+    "description": "Usage info section title"
   },
-  "totalContinues": {
-    "message": "Auto-continuado",
-    "description": "Total auto-continues label"
+  "timesHelped": {
+    "message": "Veces ayudado",
+    "description": "Times helped label"
   },
   "totalTimeSaved": {
     "message": "Tiempo ahorrado",
@@ -71,9 +71,9 @@
     "message": "Último restablecimiento",
     "description": "Last reset label"
   },
-  "resetStatistics": {
-    "message": "Restablecer Estadísticas",
-    "description": "Button to reset statistics"
+  "resetCounters": {
+    "message": "Restablecer Contadores",
+    "description": "Button to reset counters"
   },
   "exportData": {
     "message": "Exportar Datos",

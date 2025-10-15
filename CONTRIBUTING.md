@@ -18,9 +18,9 @@ Thank you for your interest in contributing to AutoContinue! This document provi
    npm install
    ```
 
-4. **Create a feature branch**:
+4. **Create a branch**:
    ```bash
-   git checkout -b feature/your-feature-name
+   git checkout -b your-branch-name
    ```
 
 5. **Make your changes and test**:
@@ -38,7 +38,7 @@ Thank you for your interest in contributing to AutoContinue! This document provi
 
 7. **Push and create a Pull Request**:
    ```bash
-   git push origin feature/your-feature-name
+   git push origin your-branch-name
    ```
 
 ## Release Process
@@ -48,8 +48,8 @@ Thank you for your interest in contributing to AutoContinue! This document provi
 1. **Update version in code** (if needed)
 2. **Create and push a tag**:
    ```bash
-   git tag v1.0.1
-   git push origin v1.0.1
+   git tag 1.0.1
+   git push origin 1.0.1
    ```
 
 3. **GitHub Actions will automatically**:
@@ -73,9 +73,6 @@ npm install
 
 # Run tests
 npm test
-
-# Run tests with coverage
-npm run test:coverage
 
 # Lint code
 npm run lint
@@ -115,7 +112,6 @@ npm run clean
 
 - Write tests in the `test/` directory
 - Use **Jest** for unit testing
-- Aim for **80%+ code coverage**
 - Test all browser compatibility
 
 ## Pull Request Guidelines

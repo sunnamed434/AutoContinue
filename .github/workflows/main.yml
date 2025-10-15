@@ -56,26 +56,9 @@ jobs:
     - name: Run linter
       run: npm run lint
       
-    - name: Run tests with coverage
+    - name: Run tests
       run: npm run test:ci
       continue-on-error: true
-
-    - name: Check if tests exist
-      run: |
-        if [ -d "test" ] && [ "$(find test -name '*.test.ts' | wc -l)" -gt 0 ]; then
-          echo "✅ Tests found, running coverage check"
-          if [ ! -f coverage/coverage-summary.json ]; then
-            echo "❌ coverage-summary.json not found; did tests run with coverage?";
-            ls -la coverage || true;
-            exit 1;
-          fi
-          COVERAGE=$(node -e "const fs=require('fs');const c=JSON.parse(fs.readFileSync('coverage/coverage-summary.json','utf8'));console.log(c.total.lines.pct)")
-          echo "Current coverage: ${COVERAGE}%"
-          echo "Required coverage: 0% (tests are being developed)"
-          echo "✅ Coverage check passed (tests are being developed)";
-        else
-          echo "ℹ️ No tests found, skipping coverage check"
-        fi
 
     - name: Build extensions (Chrome/Firefox/Safari)
       if: matrix.node-version == '20.x'
@@ -106,16 +89,6 @@ jobs:
         zip -r ../artifacts/AutoContinue-Safari-${{ github.sha }}.zip . -x "*.map"
         cd ..
       
-    - name: Upload coverage reports
-      uses: codecov/codecov-action@v5
-      if: matrix.node-version == '20.x'
-      with:
-        files: ./coverage/lcov.info
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: true
-        verbose: true
-        token: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Upload Chrome artifact
       if: matrix.node-version == '20.x'

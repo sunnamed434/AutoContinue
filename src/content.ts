@@ -118,6 +118,10 @@ export function checkForVideoElement(): boolean {
 let autoconfirmScriptInjected = false;
 let cleanupFunctions: (() => void)[] = [];
 
+let lastInteractionTime = Date.now();
+let isAutoconfirmEnabled = true;
+let idleTimeout = 5000;
+
 function injectAutoconfirmScript(): void {
   try {
     if (!isExtensionContextValid()) {
@@ -131,48 +135,23 @@ function injectAutoconfirmScript(): void {
       return;
     }
 
-    const script = document.createElement('script');
-    const scriptUrl = chrome.runtime.getURL('js/autoconfirm.js');
-
-    if (!scriptUrl.startsWith('chrome-extension://')) {
-      console.error('[AutoContinue] Invalid script URL, potential security risk');
-      return;
-    }
-
-    script.src = scriptUrl;
-    script.setAttribute('data-autocontinue', 'true');
-    script.onload = function (): void {
       autoconfirmScriptInjected = true;
-      const scriptElement = script;
-      if (scriptElement.parentNode) {
-        scriptElement.parentNode.removeChild(scriptElement);
-      }
-    };
-    script.onerror = function (): void {
-      console.error('[AutoContinue] Failed to load autoconfirm script');
-      autoconfirmScriptInjected = false;
-    };
-
-    const targetElement = document.head || document.documentElement;
-    if (targetElement && targetElement.nodeType === Node.ELEMENT_NODE) {
-      targetElement.appendChild(script);
-    }
+    console.log('[AutoContinue] Autoconfirm functionality enabled');
   } catch (error) {
     if (error instanceof Error && error.message.includes('Extension context invalidated')) {
       console.warn(
         '[AutoContinue] Extension context invalidated, please reload the page to re-enable AutoContinue'
       );
     } else {
-      console.error('[AutoContinue] Error injecting autoconfirm script:', error);
+      console.error('[AutoContinue] Error enabling autoconfirm functionality:', error);
     }
   }
 }
 
 async function initializeExtension(): Promise<void> {
   injectAutoconfirmScript();
-  setupFallbackAutoContinue();
-  setupVisibilityListener();
-  await sendSettingsToAutoconfirm();
+  setupAutoconfirmListeners();
+  await loadAutoconfirmSettings();
 
   setTimeout(() => {
     const hasVideo = checkForVideoElement();
@@ -186,27 +165,6 @@ async function initializeExtension(): Promise<void> {
       console.log('[AutoContinue] Found containers:', containers.length);
     }
   }, 2000);
-}
-
-async function sendSettingsToAutoconfirm(): Promise<void> {
-  try {
-    const result = await chrome.storage.local.get(['enabled', 'idleTimeout', 'enableYouTubeMusic']);
-
-    const settings = {
-      enabled: result['enabled'] !== false,
-      idleTimeout: result['idleTimeout'] || 5,
-      enableYouTubeMusic: result['enableYouTubeMusic'] !== false,
-    };
-
-    const event = new CustomEvent('autocontinue-settings-updated', {
-      detail: settings,
-    });
-    window.dispatchEvent(event);
-
-    console.log('[AutoContinue] Settings sent to autoconfirm script:', settings);
-  } catch (error) {
-    console.error('[AutoContinue] Failed to send settings to autoconfirm script:', error);
-  }
 }
 
 if (document.readyState === 'loading') {
@@ -259,20 +217,6 @@ function cleanup(): void {
 window.addEventListener('beforeunload', cleanup);
 window.addEventListener('unload', cleanup);
 
-function setupVisibilityListener(): void {
-  document.addEventListener('visibilitychange', () => {
-    try {
-      if (document.hidden) {
-        chrome.runtime.sendMessage({ action: 'tabHidden' });
-      } else {
-        chrome.runtime.sendMessage({ action: 'tabVisible' });
-      }
-    } catch (error) {
-      console.warn('[AutoContinue] Failed to send visibility message:', error);
-    }
-  });
-}
-
 chrome.storage.onChanged.addListener((changes, namespace) => {
   if (namespace === 'local') {
     const settings: Record<string, unknown> = {};
@@ -317,6 +261,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       }
       case 'toggle':
         console.log('[AutoContinue] Extension', message.enabled ? 'enabled' : 'disabled');
+        isAutoconfirmEnabled = message.enabled;
         break;
       default:
         console.warn('[AutoContinue] Unknown message action:', message.action);
@@ -338,6 +283,154 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 });
 
-function setupFallbackAutoContinue(): void {
-  console.log('[AutoContinue] Setting up fallback auto-continue logic...');
+function isUserIdle(): boolean {
+  return Date.now() - lastInteractionTime > idleTimeout;
+}
+
+function processInteraction(): void {
+  lastInteractionTime = Date.now();
+}
+
+async function autoClickContinue(): Promise<boolean> {
+  try {
+    if (!chrome || !chrome.storage || !chrome.storage.local) {
+      console.warn('[AutoContinue] Chrome storage API not available');
+      return false;
+    }
+
+    const result = await chrome.storage.local.get(['autoContinueInProgress']);
+    if (result.autoContinueInProgress) {
+      return false;
+    }
+
+    const selectors = [
+      'yt-confirm-dialog-renderer button[aria-label*="Continue watching"]',
+      'yt-confirm-dialog-renderer button[aria-label*="continue watching"]',
+      'yt-confirm-dialog-renderer #confirm-button',
+      'yt-confirm-dialog-renderer button[aria-label*="Yes"]',
+      'ytmusic-you-there-renderer button[aria-label*="Continue"]',
+      'ytmusic-you-there-renderer button[aria-label*="continue"]',
+      'yt-confirm-dialog-renderer yt-button-renderer button',
+      'ytmusic-you-there-renderer yt-button-renderer button',
+    ];
+
+    for (const selector of selectors) {
+      const button = document.querySelector(selector) as HTMLButtonElement;
+      if (button && button.offsetParent !== null && !button.disabled) {
+        await chrome.storage.local.set({ autoContinueInProgress: true });
+        button.click();
+
+        updateLocalStats().catch(error => {
+          console.error('[AutoContinue] Failed to update local stats:', error);
+        });
+
+        setTimeout(async () => {
+          try {
+            await chrome.storage.local.set({ autoContinueInProgress: false });
+          } catch (error) {
+            console.error('[AutoContinue] Failed to reset auto-continue flag:', error);
+          }
+        }, 1000);
+
+        console.log('[AutoContinue] Auto-continue button clicked successfully');
+        return true;
+      }
+    }
+
+    return false;
+  } catch (error) {
+    console.error('[AutoContinue] Error in autoClickContinue:', error);
+    return false;
+  }
+}
+
+async function updateLocalStats(): Promise<void> {
+  try {
+    if (!chrome || !chrome.runtime || !chrome.runtime.sendMessage) {
+      console.warn('[AutoContinue] Chrome runtime API not available');
+      return;
+    }
+
+    chrome.runtime.sendMessage({
+      action: 'updateStats',
+    });
+
+    console.log('[AutoContinue] Local stats update message sent');
+  } catch (error) {
+    console.error('[AutoContinue] Failed to send local stats update message:', error);
+  }
+}
+
+async function loadAutoconfirmSettings(): Promise<void> {
+  try {
+    if (!chrome || !chrome.storage || !chrome.storage.local) {
+      console.warn('[AutoContinue] Chrome storage API not available, using defaults');
+      isAutoconfirmEnabled = true;
+      idleTimeout = 5000;
+      return;
+    }
+
+    const result = await chrome.storage.local.get(['enabled', 'idleTimeout']);
+    isAutoconfirmEnabled = result.enabled !== false;
+    idleTimeout = (result.idleTimeout || 5) * 1000;
+    console.log('[AutoContinue] Settings loaded:', { isAutoconfirmEnabled, idleTimeout });
+  } catch (error) {
+    console.error('[AutoContinue] Failed to load settings:', error);
+    isAutoconfirmEnabled = true;
+    idleTimeout = 5000;
+  }
+}
+
+function setupAutoconfirmListeners(): void {
+  ['mousedown', 'mousemove', 'keypress', 'keydown', 'touchstart', 'scroll'].forEach(eventType => {
+    document.addEventListener(eventType, processInteraction, { passive: true });
+  });
+
+  document.addEventListener('yt-popup-opened', (event: Event) => {
+    const customEvent = event as CustomEvent<{ nodeName?: string }>;
+    const detail = customEvent.detail;
+    if (
+      detail &&
+      (detail.nodeName === 'YT-CONFIRM-DIALOG-RENDERER' ||
+        detail.nodeName === 'YTMUSIC-YOU-THERE-RENDERER')
+    ) {
+      console.log('[AutoContinue] Continue watching popup detected');
+      if (isAutoconfirmEnabled && isUserIdle()) {
+        setTimeout(async () => {
+          await autoClickContinue();
+        }, 100);
+      }
+    }
+  });
+
+  const observer = new MutationObserver(mutations => {
+    mutations.forEach(mutation => {
+      if (mutation.type === 'childList') {
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as Element;
+            if (element.matches && (
+              element.matches('yt-confirm-dialog-renderer') ||
+              element.matches('ytmusic-you-there-renderer') ||
+              element.querySelector('yt-confirm-dialog-renderer') ||
+              element.querySelector('ytmusic-you-there-renderer')
+            )) {
+              console.log('[AutoContinue] Popup detected via mutation observer');
+              if (isAutoconfirmEnabled && isUserIdle()) {
+                setTimeout(async () => {
+                  await autoClickContinue();
+                }, 200);
+              }
+            }
+          }
+        });
+      }
+    });
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  cleanupFunctions.push(() => {
+    observer.disconnect();
+  });
 }

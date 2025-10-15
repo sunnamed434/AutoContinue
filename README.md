@@ -16,7 +16,7 @@ Ever been watching a YouTube video and that annoying "Continue watching?" popup 
 - Automatically clicks "Continue watching?" on YouTube so you don't have to
 - Works on both YouTube and YouTube Music
 - You can adjust how long it waits before clicking (idle timeout)
-- Shows you how many times it's helped you out
+- Shows how many times it's helped you
 - Has a test mode so you can see it working
 - Available in multiple languages
 - Doesn't collect any of your data - everything stays on your computer

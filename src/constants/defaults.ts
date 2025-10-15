@@ -7,5 +7,4 @@ export const DEFAULT_CONFIG = {
   idleTimeout: 5,
   autoClickDelay: 100,
   enableYouTubeMusic: true,
-  testMode: false,
 } as const;

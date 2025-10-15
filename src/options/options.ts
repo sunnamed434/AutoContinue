@@ -10,7 +10,6 @@ interface AutoContinueSettings {
   idleTimeout: number;
   autoClickDelay: number;
   enableYouTubeMusic: boolean;
-  testMode: boolean;
 }
 
 class OptionsController {
@@ -19,7 +18,6 @@ class OptionsController {
   private idleTimeoutInput!: HTMLInputElement;
   private autoClickDelayInput!: HTMLInputElement;
   private enableYouTubeMusicToggle!: HTMLInputElement;
-  private testModeToggle!: HTMLInputElement;
   private totalContinues!: HTMLElement;
   private totalTimeSaved!: HTMLElement;
   private lastReset!: HTMLElement;
@@ -57,7 +55,6 @@ class OptionsController {
     this.enableYouTubeMusicToggle = document.getElementById(
       'enable-youtube-music'
     ) as HTMLInputElement;
-    this.testModeToggle = document.getElementById('test-mode') as HTMLInputElement;
     this.totalContinues = document.getElementById('total-continues') as HTMLElement;
     this.totalTimeSaved = document.getElementById('total-time-saved') as HTMLElement;
     this.lastReset = document.getElementById('last-reset') as HTMLElement;
@@ -83,7 +80,6 @@ class OptionsController {
         idleTimeout: config.idleTimeout,
         autoClickDelay: config.autoClickDelay,
         enableYouTubeMusic: config.enableYouTubeMusic,
-        testMode: config.testMode,
       };
 
       this.updateUI(settings);
@@ -98,7 +94,6 @@ class OptionsController {
     this.idleTimeoutInput.value = settings.idleTimeout.toString();
     this.autoClickDelayInput.value = settings.autoClickDelay.toString();
     this.enableYouTubeMusicToggle.checked = settings.enableYouTubeMusic;
-    this.testModeToggle.checked = settings.testMode;
 
     this.totalContinues.textContent = settings.autoContinueCount.toString();
     this.totalTimeSaved.textContent = formatTime(settings.timeSaved);
@@ -153,13 +148,6 @@ class OptionsController {
       }
     });
 
-    this.testModeToggle.addEventListener('change', async () => {
-      const config = await chrome.storage.local.get();
-      if (config) {
-        config.testMode = this.testModeToggle.checked;
-        await chrome.storage.local.set(config);
-      }
-    });
 
     this.resetStatsBtn.addEventListener('click', async () => {
       if (confirm('Are you sure you want to reset all statistics? This action cannot be undone.')) {
@@ -190,7 +178,6 @@ class OptionsController {
           config.idleTimeout = DEFAULT_CONFIG.idleTimeout;
           config.autoClickDelay = DEFAULT_CONFIG.autoClickDelay;
           config.enableYouTubeMusic = DEFAULT_CONFIG.enableYouTubeMusic;
-          config.testMode = DEFAULT_CONFIG.testMode;
           await chrome.storage.local.set(config);
           this.loadSettings();
         }

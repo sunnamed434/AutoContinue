@@ -12,6 +12,11 @@ export function processInteraction(): void {
 
 export async function resetAutoContinueFlag(): Promise<void> {
   try {
+    if (!chrome || !chrome.storage || !chrome.storage.local) {
+      console.warn('[AutoContinue] Chrome storage API not available');
+      return;
+    }
+
     await chrome.storage.local.set({ autoContinueInProgress: false });
   } catch (error) {
     console.error('[AutoContinue] Failed to reset auto-continue flag:', error);
@@ -20,6 +25,13 @@ export async function resetAutoContinueFlag(): Promise<void> {
 
 async function loadSettings(): Promise<void> {
   try {
+    if (!chrome || !chrome.storage || !chrome.storage.local) {
+      console.warn('[AutoContinue] Chrome storage API not available');
+      isEnabled = true;
+      idleTimeout = 5000;
+      return;
+    }
+
     const result = await chrome.storage.local.get(['enabled', 'idleTimeout']);
     isEnabled = result.enabled !== false;
     idleTimeout = (result.idleTimeout || 5) * 1000;
@@ -34,15 +46,15 @@ async function loadSettings(): Promise<void> {
 function setupStorageListener(): void {
   try {
     window.addEventListener('autocontinue-settings-updated', (event: Event) => {
-      const customEvent = event as CustomEvent;
+      const customEvent = event as CustomEvent<Record<string, unknown>>;
       const settings = customEvent.detail;
       if (settings) {
         if (settings.enabled !== undefined) {
-          isEnabled = settings.enabled;
+          isEnabled = Boolean(settings.enabled);
           console.log('[AutoContinue] Extension enabled state changed:', isEnabled);
         }
         if (settings.idleTimeout !== undefined) {
-          idleTimeout = (settings.idleTimeout || 5) * 1000;
+          idleTimeout = (Number(settings.idleTimeout) || 5) * 1000;
           console.log('[AutoContinue] Idle timeout changed:', idleTimeout);
         }
       }
@@ -52,26 +64,37 @@ function setupStorageListener(): void {
   }
 }
 
-async function updateStats(): Promise<void> {
+async function updateLocalStats(): Promise<void> {
   try {
+    if (!chrome || !chrome.runtime || !chrome.runtime.sendMessage) {
+      console.warn('[AutoContinue] Chrome runtime API not available');
+      return;
+    }
+
     chrome.runtime.sendMessage({
       action: 'updateStats',
     });
 
-    console.log('[AutoContinue] Stats update message sent to background script');
+    console.log('[AutoContinue] Local stats update message sent');
   } catch (error) {
-    console.error('[AutoContinue] Failed to send stats update message:', error);
+    console.error('[AutoContinue] Failed to send local stats update message:', error);
   }
 }
 
 export async function autoClickContinue(): Promise<boolean> {
   try {
+    if (!chrome || !chrome.storage || !chrome.storage.local) {
+      console.warn('[AutoContinue] Chrome storage API not available');
+      return false;
+    }
+
     const result = await chrome.storage.local.get(['autoContinueInProgress']);
     if (result.autoContinueInProgress) {
       return false;
     }
 
     const selectors = [
+      'yt-confirm-dialog-renderer yt-button-renderer#confirm-button button',
       'yt-confirm-dialog-renderer button[aria-label*="Continue watching"]',
       'yt-confirm-dialog-renderer button[aria-label*="continue watching"]',
       'yt-confirm-dialog-renderer #confirm-button',
@@ -88,8 +111,8 @@ export async function autoClickContinue(): Promise<boolean> {
         await chrome.storage.local.set({ autoContinueInProgress: true });
         button.click();
 
-        updateStats().catch(error => {
-          console.error('[AutoContinue] Failed to update stats:', error);
+        updateLocalStats().catch(error => {
+          console.error('[AutoContinue] Failed to update local stats:', error);
         });
 
         setTimeout(async () => {
@@ -113,7 +136,7 @@ export async function autoClickContinue(): Promise<boolean> {
 
 function listenForPopupEvent(): void {
   document.addEventListener('yt-popup-opened', (event: Event) => {
-    const customEvent = event as CustomEvent;
+    const customEvent = event as CustomEvent<{ nodeName?: string }>;
     const detail = customEvent.detail;
     if (
       detail &&
