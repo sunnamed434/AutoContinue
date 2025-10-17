@@ -17,7 +17,6 @@ Ever been watching a YouTube video and that annoying "Continue watching?" popup 
 - Works on both YouTube and YouTube Music
 - You can adjust how long it waits before clicking (idle timeout)
 - Shows how many times it's helped you
-- Has a test mode so you can see it working
 - Available in multiple languages
 - Doesn't collect any of your data - everything stays on your computer
 
@@ -41,7 +40,6 @@ The extension is currently under review by Google and will be available in the C
 Once installed, it just works automatically. But you can also:
 - Click the extension icon to see how many times it's helped you
 - Right-click the icon and pick "Options" to change settings
-- Use the test mode to see it in action
 
 ## For developers
 
@@ -95,7 +93,6 @@ Want to help? Great! Check out [CONTRIBUTING.md](CONTRIBUTING.md) for the full g
 - [x] Auto-continue functionality
 - [x] Chrome extension
 - [x] Settings and stats
-- [x] Test mode
 - [ ] Firefox extension
 - [ ] Edge extension
 - [ ] Opera extension

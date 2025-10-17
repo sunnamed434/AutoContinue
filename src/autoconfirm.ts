@@ -94,11 +94,19 @@ export async function autoClickContinue(): Promise<boolean> {
     }
 
     const selectors = [
+      // New selectors with yt-button-shape (YouTube updated DOM structure)
+      'yt-confirm-dialog-renderer yt-button-renderer#confirm-button yt-button-shape button',
+      'yt-confirm-dialog-renderer yt-button-shape button[aria-label*="Yes"]',
+      'yt-confirm-dialog-renderer yt-button-shape button[aria-label*="Continue"]',
+      'yt-confirm-dialog-renderer yt-button-shape button[aria-label*="continue"]',
+      // Legacy selectors (fallback for older YouTube versions)
       'yt-confirm-dialog-renderer yt-button-renderer#confirm-button button',
       'yt-confirm-dialog-renderer button[aria-label*="Continue watching"]',
       'yt-confirm-dialog-renderer button[aria-label*="continue watching"]',
       'yt-confirm-dialog-renderer #confirm-button',
       'yt-confirm-dialog-renderer button[aria-label*="Yes"]',
+      // YouTube Music selectors
+      'ytmusic-you-there-renderer yt-button-shape button',
       'ytmusic-you-there-renderer button[aria-label*="Continue"]',
       'ytmusic-you-there-renderer button[aria-label*="continue"]',
       'yt-confirm-dialog-renderer yt-button-renderer button',
