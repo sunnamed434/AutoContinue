@@ -118,14 +118,6 @@ npm run validate:locales
 - Use **Jest** for unit testing
 - Test all browser compatibility
 
-## Pull Request Guidelines
-
-1. **Keep PRs small and focused**
-2. **Write clear descriptions**
-3. **Include tests for new features**
-4. **Update documentation if needed**
-5. **Ensure all checks pass**
-
 ## Questions?
 
 - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/sunnamed434/AutoContinue/issues)

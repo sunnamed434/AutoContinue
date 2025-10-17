@@ -20,25 +20,3 @@ declare namespace chrome {
     function getMessage(messageName: string, substitutions?: string | string[]): string;
   }
 }
-
-interface YouTubeVideoElement extends HTMLVideoElement {
-  yns_pause?: () => void;
-}
-
-interface YouTubePopupEvent extends CustomEvent {
-  detail: {
-    nodeName: string;
-  };
-}
-
-interface AutoContinueConfig {
-  enabled: boolean;
-  showNotifications: boolean;
-  autoContinueCount: number;
-  timeSaved: number;
-  lastReset: number;
-}
-
-declare const AUTO_CONTINUE_VERSION: string;
-declare const IS_YOUTUBE_MUSIC: boolean;
-declare const IS_MOBILE_YOUTUBE: boolean;

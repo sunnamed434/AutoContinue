@@ -1,5 +1,6 @@
 import { formatTime, formatDate } from '../utils/formatters';
 import { DEFAULT_CONFIG } from '../constants/defaults';
+import { logger } from '../utils/logger';
 
 interface AutoContinueSettings {
   enabled: boolean;
@@ -37,7 +38,7 @@ class OptionsController {
       this.setupEventListeners();
       this.setupConfigListener();
     } catch (error) {
-      console.error('[AutoContinue] Failed to initialize config:', error);
+      logger.error('[AutoContinue] Failed to initialize config:', error);
       this.loadSettings();
       this.setupEventListeners();
     }
@@ -64,7 +65,7 @@ class OptionsController {
             this.enableYouTubeMusicToggle.checked = changes.enableYouTubeMusic.newValue;
           }
         } catch (error) {
-          console.error('[AutoContinue Options] Error updating UI from storage changes:', error);
+          logger.error('[AutoContinue Options] Error updating UI from storage changes:', error);
         }
       }
     });
@@ -109,7 +110,7 @@ class OptionsController {
 
       this.updateUI(settings);
     } catch (error) {
-      console.error('Failed to load settings:', error);
+      logger.error('Failed to load settings:', error);
     }
   }
 
@@ -234,7 +235,7 @@ class OptionsController {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } catch (error) {
-        console.error('Failed to export settings:', error);
+        logger.error('Failed to export settings:', error);
         alert('Failed to export settings. Please try again.');
       }
     });

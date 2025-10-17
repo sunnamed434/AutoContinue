@@ -1,4 +1,5 @@
 import { formatTime } from '../utils/formatters';
+import { logger } from '../utils/logger';
 
 interface AutoContinueStats {
   enabled: boolean;
@@ -22,13 +23,13 @@ class PopupController {
     try {
       this.initializeElements();
       this.loadSettings().catch(error => {
-        console.error('[AutoContinue Popup] Failed to load settings:', error);
+        logger.error('[AutoContinue Popup] Failed to load settings:', error);
       });
       this.setupEventListeners();
       this.setupSystemThemeListener();
       this.setupStorageListener();
     } catch (error) {
-      console.error('[AutoContinue Popup] Error in PopupController constructor:', error);
+      logger.error('[AutoContinue Popup] Error in PopupController constructor:', error);
       this.setupFallbackUI();
     }
   }
@@ -57,7 +58,7 @@ class PopupController {
         container.appendChild(errorDiv);
       }
     } catch (error) {
-      console.error('[AutoContinue Popup] Failed to setup fallback UI:', error);
+      logger.error('[AutoContinue Popup] Failed to setup fallback UI:', error);
     }
   }
 
@@ -75,7 +76,7 @@ class PopupController {
   private async loadSettings(): Promise<void> {
     try {
       if (!chrome || !chrome.storage || !chrome.storage.local) {
-        console.warn('[AutoContinue Popup] Chrome storage API not available');
+        logger.warn('[AutoContinue Popup] Chrome storage API not available');
         return;
       }
 
@@ -104,7 +105,7 @@ class PopupController {
       this.updateUI(stats);
       setTimeout(() => this.checkVideoStatus(), 1000);
     } catch (error) {
-      console.error('Failed to load settings:', error);
+      logger.error('Failed to load settings:', error);
     }
   }
 
@@ -150,7 +151,7 @@ class PopupController {
             this.applyTheme(changes.theme.newValue);
           }
         } catch (error) {
-          console.error('[AutoContinue Popup] Error updating stats from storage changes:', error);
+          logger.error('[AutoContinue Popup] Error updating stats from storage changes:', error);
         }
       }
     });
@@ -201,18 +202,18 @@ class PopupController {
                   target: { tabId: tab.id },
                   files: ['js/content.js'],
                 });
-                console.log('[AutoContinue] Content script injected manually');
+                logger.log('[AutoContinue] Content script injected manually');
                 await new Promise(resolve => setTimeout(resolve, 500));
               } else {
-                console.log('[AutoContinue] Scripting API not available');
+                logger.log('[AutoContinue] Scripting API not available');
               }
             } catch (injectError) {
-              console.log('[AutoContinue] Could not inject content script:', injectError);
+              logger.log('[AutoContinue] Could not inject content script:', injectError);
             }
           }
 
           const response = await chrome.tabs.sendMessage(tab.id, { action: 'checkVideo' });
-          console.log('[AutoContinue] Video status response:', response);
+          logger.log('[AutoContinue] Video status response:', response);
 
           if (response && response.hasVideo) {
             this.videoStatus.style.display = 'none';
@@ -223,18 +224,18 @@ class PopupController {
               const delay = Math.min(1000 * Math.pow(2, retryCount), 3000);
               setTimeout(() => this.checkVideoStatus(retryCount + 1), delay);
             } else {
-              console.log('[AutoContinue] Max retries reached for video detection');
+              logger.log('[AutoContinue] Max retries reached for video detection');
             }
           }
         } catch (error) {
-          console.error('[AutoContinue] Error checking video status:', error);
+          logger.error('[AutoContinue] Error checking video status:', error);
 
           if (
             error instanceof Error &&
             error.message &&
             error.message.includes('Could not establish connection')
           ) {
-            console.log('[AutoContinue] Content script not ready, will retry...');
+            logger.log('[AutoContinue] Content script not ready, will retry...');
             if (retryCount < maxRetries) {
               const delay = Math.min(1500 * Math.pow(2, retryCount), 5000);
               setTimeout(() => this.checkVideoStatus(retryCount + 1), delay);
@@ -263,7 +264,7 @@ class PopupController {
         }
       }
     } catch (error) {
-      console.error('Failed to check video status:', error);
+      logger.error('Failed to check video status:', error);
     }
   }
 
@@ -295,7 +296,7 @@ class PopupController {
           }
         }
       } catch (error) {
-        console.error('Failed to notify content script:', error);
+        logger.error('Failed to notify content script:', error);
       }
     });
 
@@ -315,7 +316,7 @@ class PopupController {
           window.close();
         }
       } catch (error) {
-        console.error('Failed to refresh tab:', error);
+        logger.error('Failed to refresh tab:', error);
       }
     });
 
@@ -328,23 +329,23 @@ class PopupController {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('[AutoContinue Popup] DOM loaded, initializing popup controller...');
+  logger.log('[AutoContinue Popup] DOM loaded, initializing popup controller...');
   try {
     new PopupController();
-    console.log('[AutoContinue Popup] Popup controller initialized successfully');
+    logger.log('[AutoContinue Popup] Popup controller initialized successfully');
   } catch (error) {
-    console.error('[AutoContinue Popup] Failed to initialize popup controller:', error);
+    logger.error('[AutoContinue Popup] Failed to initialize popup controller:', error);
   }
 });
 
 if (document.readyState === 'loading') {
-  console.log('[AutoContinue Popup] DOM is still loading, waiting for DOMContentLoaded...');
+  logger.log('[AutoContinue Popup] DOM is still loading, waiting for DOMContentLoaded...');
 } else {
-  console.log('[AutoContinue Popup] DOM already ready, initializing immediately...');
+  logger.log('[AutoContinue Popup] DOM already ready, initializing immediately...');
   try {
     new PopupController();
-    console.log('[AutoContinue Popup] Popup controller initialized successfully (immediate)');
+    logger.log('[AutoContinue Popup] Popup controller initialized successfully (immediate)');
   } catch (error) {
-    console.error('[AutoContinue Popup] Failed to initialize popup controller (immediate):', error);
+    logger.error('[AutoContinue Popup] Failed to initialize popup controller (immediate):', error);
   }
 }

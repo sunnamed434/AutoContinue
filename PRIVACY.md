@@ -22,11 +22,10 @@ AutoContinue only stores the following data locally on your device:
 
 ### Settings
 - Extension enabled/disabled state
-- Notification preferences
-- Idle timeout settings
-- Auto-click delay settings
-- YouTube Music support preference
+- Idle timeout settings (5-30 seconds)
 - Theme preferences (light/dark mode)
+- Auto-continue counter (enabled/disabled)
+- Time saved counter (enabled/disabled)
 
 ### Local Usage Counters (Optional)
 - Number of times auto-continue was triggered (for user's personal reference)
@@ -34,7 +33,6 @@ AutoContinue only stores the following data locally on your device:
 - Last reset date (for user's personal reference)
 
 **All data is stored locally using Chrome's storage API and never leaves your device. These counters are purely for the user's personal benefit and are not transmitted anywhere. You can reset or disable counter collection at any time.**
-
 
 ## Permissions
 
@@ -52,9 +50,46 @@ AutoContinue requests the following permissions:
 **These permissions are only used to provide the core functionality and are not used for data collection. The extension only accesses YouTube pages and does not monitor or collect data from other websites.**
 
 ### Permission Usage Details
-- **`storage`**: Used to save user preferences and local counters only
-- **`scripting`**: Used to inject content scripts for auto-continue functionality
-- **Host permissions**: Used only to detect and interact with YouTube's "Continue watching?" popups
+
+#### `storage` Permission
+- **Purpose**: Save user preferences and local usage statistics
+- **What we store**: Extension settings (enabled/disabled, timeout values, theme preferences), local counters (times helped, time saved)
+- **Where**: All data stored locally in your browser using Chrome's storage API
+- **Access**: Only our extension can access this data
+- **Example**: When you change the idle timeout from 5 to 10 seconds, this setting is saved locally
+
+#### `scripting` Permission  
+- **Purpose**: Inject content scripts to detect and interact with YouTube popups
+- **What it does**: Allows the extension to run code on YouTube pages to find and click "Continue watching?" buttons
+- **When used**: Only when you visit YouTube or YouTube Music pages
+- **Example**: When YouTube shows "Video paused. Continue watching?" popup, our script detects it and clicks "Yes" automatically
+
+#### Internal Communication
+- **Purpose**: Synchronize settings and state between extension components
+- **What it does**: Allows popup, options, and content scripts to communicate with background script
+- **When used**: When settings change, counters update, or extension state changes
+- **Example**: When you change settings in popup, the change is communicated to content script
+
+#### Host Permissions (YouTube domains)
+- **Purpose**: Access YouTube pages to detect popups and interact with them
+- **What we access**: Only the specific popup elements on YouTube pages
+- **What we DON'T access**: Your video history, search history, account information, or any other YouTube data
+- **Background tabs**: Works on YouTube tabs even when not active (so music continues playing)
+- **Example**: When you have YouTube Music playing in a background tab and the "Continue watching?" popup appears, we can still handle it automatically
+
+## What We Don't Do
+
+To be completely transparent, here's what AutoContinue **NEVER** does:
+
+- ❌ **No data collection**: We don't collect any personal information, browsing history, or usage patterns
+- ❌ **No tracking**: We don't track which videos you watch, how long you watch them, or any viewing habits  
+- ❌ **No external communication**: We don't send any data to external servers or third-party services
+- ❌ **No account access**: We don't access your YouTube account, login information, or profile data
+- ❌ **No video data**: We don't read video titles, descriptions, comments, or any video metadata
+- ❌ **No search history**: We don't access or store your YouTube search history
+- ❌ **No analytics**: We don't use analytics tools, tracking pixels, or any monitoring services
+- ❌ **No advertising**: We don't show ads or collect data for advertising purposes
+- ❌ **No social features**: We don't access your social connections or sharing activity
 
 ## Third-Party Services
 
@@ -69,7 +104,6 @@ AutoContinue provides the following features:
 - **Background support**: Works on YouTube tabs even when not active
 - **YouTube Music support**: Works on YouTube Music platform
 - **Idle detection**: Only triggers when user has been inactive for a specified time
-
 
 ## Data Sharing
 

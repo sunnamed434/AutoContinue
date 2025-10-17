@@ -1,3 +1,5 @@
+import { logger } from './utils/logger';
+
 let lastInteractionTime = Date.now();
 let isEnabled = true;
 let idleTimeout = 5000;
@@ -10,23 +12,10 @@ export function processInteraction(): void {
   lastInteractionTime = Date.now();
 }
 
-export async function resetAutoContinueFlag(): Promise<void> {
-  try {
-    if (!chrome || !chrome.storage || !chrome.storage.local) {
-      console.warn('[AutoContinue] Chrome storage API not available');
-      return;
-    }
-
-    await chrome.storage.local.set({ autoContinueInProgress: false });
-  } catch (error) {
-    console.error('[AutoContinue] Failed to reset auto-continue flag:', error);
-  }
-}
-
 async function loadSettings(): Promise<void> {
   try {
     if (!chrome || !chrome.storage || !chrome.storage.local) {
-      console.warn('[AutoContinue] Chrome storage API not available');
+      logger.warn('[AutoContinue] Chrome storage API not available');
       isEnabled = true;
       idleTimeout = 5000;
       return;
@@ -35,9 +24,9 @@ async function loadSettings(): Promise<void> {
     const result = await chrome.storage.local.get(['enabled', 'idleTimeout']);
     isEnabled = result.enabled !== false;
     idleTimeout = (result.idleTimeout || 5) * 1000;
-    console.log('[AutoContinue] Settings loaded:', { isEnabled, idleTimeout });
+    logger.log('[AutoContinue] Settings loaded:', { isEnabled, idleTimeout });
   } catch (error) {
-    console.error('[AutoContinue] Failed to load settings:', error);
+    logger.error('[AutoContinue] Failed to load settings:', error);
     isEnabled = true;
     idleTimeout = 5000;
   }
@@ -51,23 +40,23 @@ function setupStorageListener(): void {
       if (settings) {
         if (settings.enabled !== undefined) {
           isEnabled = Boolean(settings.enabled);
-          console.log('[AutoContinue] Extension enabled state changed:', isEnabled);
+          logger.log('[AutoContinue] Extension enabled state changed:', isEnabled);
         }
         if (settings.idleTimeout !== undefined) {
           idleTimeout = (Number(settings.idleTimeout) || 5) * 1000;
-          console.log('[AutoContinue] Idle timeout changed:', idleTimeout);
+          logger.log('[AutoContinue] Idle timeout changed:', idleTimeout);
         }
       }
     });
   } catch (error) {
-    console.error('[AutoContinue] Failed to setup storage listener:', error);
+    logger.error('[AutoContinue] Failed to setup storage listener:', error);
   }
 }
 
 async function updateLocalStats(): Promise<void> {
   try {
     if (!chrome || !chrome.runtime || !chrome.runtime.sendMessage) {
-      console.warn('[AutoContinue] Chrome runtime API not available');
+      logger.warn('[AutoContinue] Chrome runtime API not available');
       return;
     }
 
@@ -75,16 +64,16 @@ async function updateLocalStats(): Promise<void> {
       action: 'updateStats',
     });
 
-    console.log('[AutoContinue] Local stats update message sent');
+    logger.log('[AutoContinue] Local stats update message sent');
   } catch (error) {
-    console.error('[AutoContinue] Failed to send local stats update message:', error);
+    logger.error('[AutoContinue] Failed to send local stats update message:', error);
   }
 }
 
 export async function autoClickContinue(): Promise<boolean> {
   try {
     if (!chrome || !chrome.storage || !chrome.storage.local) {
-      console.warn('[AutoContinue] Chrome storage API not available');
+      logger.warn('[AutoContinue] Chrome storage API not available');
       return false;
     }
 
@@ -120,14 +109,14 @@ export async function autoClickContinue(): Promise<boolean> {
         button.click();
 
         updateLocalStats().catch(error => {
-          console.error('[AutoContinue] Failed to update local stats:', error);
+          logger.error('[AutoContinue] Failed to update local stats:', error);
         });
 
         setTimeout(async () => {
           try {
             await chrome.storage.local.set({ autoContinueInProgress: false });
           } catch (error) {
-            console.error('[AutoContinue] Failed to reset auto-continue flag:', error);
+            logger.error('[AutoContinue] Failed to reset auto-continue flag:', error);
           }
         }, 1000);
 
@@ -137,7 +126,7 @@ export async function autoClickContinue(): Promise<boolean> {
 
     return false;
   } catch (error) {
-    console.error('[AutoContinue] Error in autoClickContinue:', error);
+    logger.error('[AutoContinue] Error in autoClickContinue:', error);
     return false;
   }
 }
@@ -151,7 +140,7 @@ function listenForPopupEvent(): void {
       (detail.nodeName === 'YT-CONFIRM-DIALOG-RENDERER' ||
         detail.nodeName === 'YTMUSIC-YOU-THERE-RENDERER')
     ) {
-      console.log('[AutoContinue] Continue watching popup detected');
+      logger.log('[AutoContinue] Continue watching popup detected');
 
       if (isEnabled && isUserIdle()) {
         setTimeout(async () => {
@@ -183,7 +172,7 @@ function setupMutationObserver(): void {
                 element.querySelector('yt-confirm-dialog-renderer') ||
                 element.querySelector('ytmusic-you-there-renderer'))
             ) {
-              console.log('[AutoContinue] Popup detected via mutation observer');
+              logger.log('[AutoContinue] Popup detected via mutation observer');
 
               if (isEnabled && isUserIdle()) {
                 setTimeout(async () => {
@@ -204,7 +193,7 @@ function setupMutationObserver(): void {
 }
 
 async function init(): Promise<void> {
-  console.log('[AutoContinue] Initializing simple version');
+  logger.log('[AutoContinue] Initializing simple version');
 
   await loadSettings();
 
@@ -213,7 +202,7 @@ async function init(): Promise<void> {
   setupMutationObserver();
   setupStorageListener();
 
-  console.log('[AutoContinue] Simple version initialized');
+  logger.log('[AutoContinue] Simple version initialized');
 }
 
 if (document.readyState === 'loading') {

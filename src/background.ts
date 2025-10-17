@@ -1,4 +1,5 @@
 import { DEFAULT_CONFIG } from './constants/defaults';
+import { logger } from './utils/logger';
 
 chrome.runtime.onInstalled.addListener(details => {
   try {
@@ -15,18 +16,18 @@ chrome.runtime.onInstalled.addListener(details => {
           enableYouTubeMusic: DEFAULT_CONFIG.enableYouTubeMusic,
         })
         .then(() => {
-          console.log('[AutoContinue] Default settings initialized');
+          logger.log('[AutoContinue] Default settings initialized');
         })
         .catch(error => {
-          console.error('[AutoContinue] Failed to initialize default settings:', error);
+          logger.error('[AutoContinue] Failed to initialize default settings:', error);
         });
 
       chrome.runtime.openOptionsPage().catch(error => {
-        console.error('[AutoContinue] Failed to open options page:', error);
+        logger.error('[AutoContinue] Failed to open options page:', error);
       });
     }
   } catch (error) {
-    console.error('[AutoContinue] Error in onInstalled listener:', error);
+    logger.error('[AutoContinue] Error in onInstalled listener:', error);
   }
 });
 
@@ -46,11 +47,11 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse): boolean =
         // Forward to content script
         return true;
       default:
-        console.warn('[AutoContinue] Unknown message action:', message.action);
+        logger.warn('[AutoContinue] Unknown message action:', message.action);
     }
     return true;
   } catch (error) {
-    console.error('[AutoContinue] Error handling message:', error);
+    logger.error('[AutoContinue] Error handling message:', error);
     return false;
   }
 });
@@ -59,7 +60,7 @@ async function handleToggleMessage(enabled: boolean): Promise<void> {
   try {
     await chrome.storage.local.set({ enabled });
   } catch (error) {
-    console.error('[AutoContinue] Failed to update enabled state:', error);
+    logger.error('[AutoContinue] Failed to update enabled state:', error);
   }
 }
 
@@ -81,20 +82,20 @@ async function handleStatsUpdate(): Promise<void> {
         timeSaved: newTimeSaved,
       });
 
-      console.log('[AutoContinue] Local statistics updated:', {
+      logger.log('[AutoContinue] Local statistics updated:', {
         count: newCount,
         timeSaved: newTimeSaved,
       });
       return;
     } catch (error) {
       retryCount++;
-      console.error(
+      logger.error(
         `[AutoContinue] Failed to update local statistics (attempt ${retryCount}/${maxRetries}):`,
         error
       );
 
       if (retryCount >= maxRetries) {
-        console.error('[AutoContinue] Max retries reached for stats update, giving up');
+        logger.error('[AutoContinue] Max retries reached for stats update, giving up');
         return;
       }
 
@@ -117,17 +118,17 @@ async function handleGetSettings(
     ]);
     sendResponse(result);
   } catch (error) {
-    console.error('[AutoContinue] Failed to get settings:', error);
+    logger.error('[AutoContinue] Failed to get settings:', error);
     sendResponse({});
   }
 }
 
 self.addEventListener('error', event => {
-  console.error('[AutoContinue] Global error in background script:', event.error);
+  logger.error('[AutoContinue] Global error in background script:', event.error);
 });
 
 self.addEventListener('unhandledrejection', event => {
-  console.error('[AutoContinue] Unhandled promise rejection in background script:', event.reason);
+  logger.error('[AutoContinue] Unhandled promise rejection in background script:', event.reason);
 });
 
-console.log('[AutoContinue] Background script loaded successfully');
+logger.log('[AutoContinue] Background script loaded successfully');
