@@ -17,6 +17,7 @@ Ever been watching a YouTube video and that annoying "Continue watching?" popup 
 - Works on both YouTube and YouTube Music
 - You can adjust how long it waits before clicking (idle timeout)
 - Shows how many times it's helped you
+- Dark mode for the extension interface
 - Available in multiple languages
 - Doesn't collect any of your data - everything stays on your computer
 
@@ -39,7 +40,7 @@ The extension is currently under review by Google and will be available in the C
 
 Once installed, it just works automatically. But you can also:
 - Click the extension icon to see how many times it's helped you
-- Right-click the icon and pick "Options" to change settings
+- Right-click the icon and pick "Options" to change settings like idle timeout and extension theme
 
 ## For developers
 

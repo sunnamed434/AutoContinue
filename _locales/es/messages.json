@@ -4,7 +4,7 @@
     "description": "Full extension name"
   },
   "Description": {
-    "message": "Descartar automáticamente el popup '¿Continuar viendo?' de YouTube para reproducción ininterrumpida. Funciona en YouTube y YouTube Music.",
+    "message": "Auto-descarta popup '¿Continuar viendo?' de YouTube. Funciona en YouTube y YouTube Music. Modo oscuro, configuraciones y contador de ayuda.",
     "description": "Extension description"
   },
   "popupTitle": {

@@ -4,7 +4,7 @@
     "description": "Full extension name"
   },
   "Description": {
-    "message": "Automatically dismiss YouTube's 'Continue watching?' popup for uninterrupted playback. Works on YouTube and YouTube Music.",
+    "message": "Auto-dismiss YouTube's 'Continue watching?' popup. Works on YouTube and YouTube Music. Dark mode, settings, and usage tracking.",
     "description": "Extension description"
   },
   "popupTitle": {

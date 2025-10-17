@@ -4,7 +4,7 @@
     "description": "Full extension name"
   },
   "Description": {
-    "message": "Автоматически закрывает всплывающее окно YouTube 'Продолжить просмотр?' для непрерывного воспроизведения. Работает на YouTube и YouTube Music.",
+    "message": "Автоматически закрывает popup YouTube 'Продолжить просмотр?'. Работает на YouTube и YouTube Music. Темная тема, настройки и счетчик помощи.",
     "description": "Extension description"
   },
   "popupTitle": {
