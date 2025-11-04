@@ -328,24 +328,26 @@ class PopupController {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  logger.log('[AutoContinue Popup] DOM loaded, initializing popup controller...');
+let popupControllerInitialized = false;
+
+function initializePopupController(): void {
+  if (popupControllerInitialized) {
+    return;
+  }
+
   try {
     new PopupController();
+    popupControllerInitialized = true;
     logger.log('[AutoContinue Popup] Popup controller initialized successfully');
   } catch (error) {
     logger.error('[AutoContinue Popup] Failed to initialize popup controller:', error);
   }
-});
+}
 
 if (document.readyState === 'loading') {
   logger.log('[AutoContinue Popup] DOM is still loading, waiting for DOMContentLoaded...');
+  document.addEventListener('DOMContentLoaded', initializePopupController);
 } else {
   logger.log('[AutoContinue Popup] DOM already ready, initializing immediately...');
-  try {
-    new PopupController();
-    logger.log('[AutoContinue Popup] Popup controller initialized successfully (immediate)');
-  } catch (error) {
-    logger.error('[AutoContinue Popup] Failed to initialize popup controller (immediate):', error);
-  }
+  initializePopupController();
 }

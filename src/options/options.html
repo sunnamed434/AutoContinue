@@ -37,19 +37,6 @@
 
           <div class="setting">
             <div class="setting-info">
-              <label for="show-notifications" class="setting-label">Show Notifications</label>
-              <p class="setting-description">Display a notification when auto-continuing a video</p>
-            </div>
-            <div class="setting-control">
-              <label class="toggle">
-                <input type="checkbox" id="show-notifications" />
-                <span class="slider"></span>
-              </label>
-            </div>
-          </div>
-
-          <div class="setting">
-            <div class="setting-info">
               <label for="idle-timeout" class="setting-label">Idle Timeout</label>
               <p class="setting-description">
                 How long to wait before considering user idle (seconds)
@@ -64,40 +51,6 @@
                 value="5"
                 class="number-input"
               />
-            </div>
-          </div>
-
-          <div class="setting">
-            <div class="setting-info">
-              <label for="auto-click-delay" class="setting-label">Auto-click Delay</label>
-              <p class="setting-description">
-                Delay before auto-clicking continue button (milliseconds)
-              </p>
-            </div>
-            <div class="setting-control">
-              <input
-                type="number"
-                id="auto-click-delay"
-                min="0"
-                max="5000"
-                value="100"
-                class="number-input"
-              />
-            </div>
-          </div>
-
-          <div class="setting">
-            <div class="setting-info">
-              <label for="enable-youtube-music" class="setting-label"
-                >Enable for YouTube Music</label
-              >
-              <p class="setting-description">Also auto-continue on YouTube Music</p>
-            </div>
-            <div class="setting-control">
-              <label class="toggle">
-                <input type="checkbox" id="enable-youtube-music" checked />
-                <span class="slider"></span>
-              </label>
             </div>
           </div>
 
@@ -126,7 +79,9 @@
 
           <div class="stats-actions">
             <button id="reset-stats" class="btn btn-danger">Reset Counters</button>
-            <button id="export-stats" class="btn btn-secondary" data-i18n="exportData">Export Info</button>
+            <button id="export-stats" class="btn btn-secondary" data-i18n="exportData">
+              Export Info
+            </button>
           </div>
         </section>
 

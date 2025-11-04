@@ -7,13 +7,10 @@ chrome.runtime.onInstalled.addListener(details => {
       chrome.storage.local
         .set({
           enabled: DEFAULT_CONFIG.enabled,
-          showNotifications: DEFAULT_CONFIG.showNotifications,
           autoContinueCount: DEFAULT_CONFIG.autoContinueCount,
           timeSaved: DEFAULT_CONFIG.timeSaved,
           lastReset: DEFAULT_CONFIG.lastReset,
           idleTimeout: DEFAULT_CONFIG.idleTimeout,
-          autoClickDelay: DEFAULT_CONFIG.autoClickDelay,
-          enableYouTubeMusic: DEFAULT_CONFIG.enableYouTubeMusic,
         })
         .then(() => {
           logger.log('[AutoContinue] Default settings initialized');
@@ -44,7 +41,6 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse): boolean =
         handleGetSettings(sendResponse);
         return true;
       case 'checkVideo':
-        // Forward to content script
         return true;
       default:
         logger.warn('[AutoContinue] Unknown message action:', message.action);
@@ -111,7 +107,6 @@ async function handleGetSettings(
   try {
     const result = await chrome.storage.local.get([
       'enabled',
-      'showNotifications',
       'autoContinueCount',
       'timeSaved',
       'lastReset',

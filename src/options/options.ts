@@ -4,21 +4,15 @@ import { logger } from '../utils/logger';
 
 interface AutoContinueSettings {
   enabled: boolean;
-  showNotifications: boolean;
   autoContinueCount: number;
   timeSaved: number;
   lastReset: number;
   idleTimeout: number;
-  autoClickDelay: number;
-  enableYouTubeMusic: boolean;
 }
 
 class OptionsController {
   private enabledToggle!: HTMLInputElement;
-  private showNotificationsToggle!: HTMLInputElement;
   private idleTimeoutInput!: HTMLInputElement;
-  private autoClickDelayInput!: HTMLInputElement;
-  private enableYouTubeMusicToggle!: HTMLInputElement;
   private totalContinues!: HTMLElement;
   private totalTimeSaved!: HTMLElement;
   private lastReset!: HTMLElement;
@@ -52,17 +46,8 @@ class OptionsController {
           if (changes.enabled) {
             this.enabledToggle.checked = changes.enabled.newValue;
           }
-          if (changes.showNotifications) {
-            this.showNotificationsToggle.checked = changes.showNotifications.newValue;
-          }
           if (changes.idleTimeout) {
             this.idleTimeoutInput.value = changes.idleTimeout.newValue.toString();
-          }
-          if (changes.autoClickDelay) {
-            this.autoClickDelayInput.value = changes.autoClickDelay.newValue.toString();
-          }
-          if (changes.enableYouTubeMusic) {
-            this.enableYouTubeMusicToggle.checked = changes.enableYouTubeMusic.newValue;
           }
         } catch (error) {
           logger.error('[AutoContinue Options] Error updating UI from storage changes:', error);
@@ -73,14 +58,7 @@ class OptionsController {
 
   private initializeElements(): void {
     this.enabledToggle = document.getElementById('enabled') as HTMLInputElement;
-    this.showNotificationsToggle = document.getElementById(
-      'show-notifications'
-    ) as HTMLInputElement;
     this.idleTimeoutInput = document.getElementById('idle-timeout') as HTMLInputElement;
-    this.autoClickDelayInput = document.getElementById('auto-click-delay') as HTMLInputElement;
-    this.enableYouTubeMusicToggle = document.getElementById(
-      'enable-youtube-music'
-    ) as HTMLInputElement;
     this.totalContinues = document.getElementById('total-continues') as HTMLElement;
     this.totalTimeSaved = document.getElementById('total-time-saved') as HTMLElement;
     this.lastReset = document.getElementById('last-reset') as HTMLElement;
@@ -99,13 +77,10 @@ class OptionsController {
 
       const settings: AutoContinueSettings = {
         enabled: config.enabled,
-        showNotifications: config.showNotifications,
         autoContinueCount: config.autoContinueCount,
         timeSaved: config.timeSaved,
         lastReset: config.lastReset,
         idleTimeout: config.idleTimeout,
-        autoClickDelay: config.autoClickDelay,
-        enableYouTubeMusic: config.enableYouTubeMusic,
       };
 
       this.updateUI(settings);
@@ -116,10 +91,7 @@ class OptionsController {
 
   private updateUI(settings: AutoContinueSettings): void {
     this.enabledToggle.checked = settings.enabled;
-    this.showNotificationsToggle.checked = settings.showNotifications;
     this.idleTimeoutInput.value = settings.idleTimeout.toString();
-    this.autoClickDelayInput.value = settings.autoClickDelay.toString();
-    this.enableYouTubeMusicToggle.checked = settings.enableYouTubeMusic;
 
     this.totalContinues.textContent = settings.autoContinueCount.toString();
     this.totalTimeSaved.textContent = formatTime(settings.timeSaved);
@@ -138,38 +110,12 @@ class OptionsController {
       }
     });
 
-    this.showNotificationsToggle.addEventListener('change', async () => {
-      const config = await chrome.storage.local.get();
-      if (config) {
-        config.showNotifications = this.showNotificationsToggle.checked;
-        await chrome.storage.local.set(config);
-      }
-    });
-
     this.idleTimeoutInput.addEventListener('change', async () => {
       const value = Math.max(1, Math.min(60, parseInt(this.idleTimeoutInput.value) || 5));
       this.idleTimeoutInput.value = value.toString();
       const config = await chrome.storage.local.get();
       if (config) {
         config.idleTimeout = value;
-        await chrome.storage.local.set(config);
-      }
-    });
-
-    this.autoClickDelayInput.addEventListener('change', async () => {
-      const value = Math.max(0, Math.min(5000, parseInt(this.autoClickDelayInput.value) || 100));
-      this.autoClickDelayInput.value = value.toString();
-      const config = await chrome.storage.local.get();
-      if (config) {
-        config.autoClickDelay = value;
-        await chrome.storage.local.set(config);
-      }
-    });
-
-    this.enableYouTubeMusicToggle.addEventListener('change', async () => {
-      const config = await chrome.storage.local.get();
-      if (config) {
-        config.enableYouTubeMusic = this.enableYouTubeMusicToggle.checked;
         await chrome.storage.local.set(config);
       }
     });
@@ -196,13 +142,10 @@ class OptionsController {
         const config = await chrome.storage.local.get();
         if (config) {
           config.enabled = DEFAULT_CONFIG.enabled;
-          config.showNotifications = DEFAULT_CONFIG.showNotifications;
           config.autoContinueCount = DEFAULT_CONFIG.autoContinueCount;
           config.timeSaved = DEFAULT_CONFIG.timeSaved;
           config.lastReset = DEFAULT_CONFIG.lastReset;
           config.idleTimeout = DEFAULT_CONFIG.idleTimeout;
-          config.autoClickDelay = DEFAULT_CONFIG.autoClickDelay;
-          config.enableYouTubeMusic = DEFAULT_CONFIG.enableYouTubeMusic;
           await chrome.storage.local.set(config);
           this.loadSettings();
         }

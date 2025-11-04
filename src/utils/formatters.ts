@@ -15,10 +15,13 @@ export function formatDate(timestamp: number): string {
   const date = new Date(timestamp);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) {
-    return 'Today';
+  if (diffMinutes < 5) {
+    return 'Now';
+  } else if (diffDays === 0) {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   } else if (diffDays === 1) {
     return 'Yesterday';
   } else if (diffDays < 7) {

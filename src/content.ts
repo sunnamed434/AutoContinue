@@ -11,38 +11,6 @@ function isExtensionContextValid(): boolean {
   }
 }
 
-function isVideoVisible(video: HTMLVideoElement): boolean {
-  if (!video) return false;
-
-  if (video.offsetHeight === 0 || video.offsetWidth === 0) {
-    return false;
-  }
-
-  const boundingRect = video.getBoundingClientRect();
-  const elementAtPoint =
-    document.elementFromPoint(
-      boundingRect.left + boundingRect.width / 2,
-      boundingRect.top + boundingRect.height / 2
-    ) || document.elementFromPoint(boundingRect.left, boundingRect.top);
-
-  if (
-    elementAtPoint === video ||
-    (elementAtPoint && video.contains(elementAtPoint)) ||
-    (elementAtPoint && elementAtPoint.contains(video))
-  ) {
-    return true;
-  }
-
-  if (video.tagName === 'VIDEO') {
-    return (
-      !!elementAtPoint?.closest('.html5-video-player')?.contains(video) ||
-      !!video.closest('#inline-preview-player')?.classList?.contains('playing-mode')
-    );
-  }
-
-  return false;
-}
-
 function checkForVideoElement(): boolean {
   const videos = document.querySelectorAll('video');
   logger.log('[AutoContinue] Found', videos.length, 'video elements');
@@ -53,9 +21,24 @@ function checkForVideoElement(): boolean {
     if (htmlVideo.duration && htmlVideo.duration > 0) {
       logger.log('[AutoContinue] Found video with duration:', htmlVideo.duration);
 
-      if (isVideoVisible(htmlVideo)) {
-        logger.log('[AutoContinue] Video is visible');
-        return true;
+      if (htmlVideo.offsetHeight > 0 && htmlVideo.offsetWidth > 0) {
+        const boundingRect = htmlVideo.getBoundingClientRect();
+        const elementAtPoint =
+          document.elementFromPoint(
+            boundingRect.left + boundingRect.width / 2,
+            boundingRect.top + boundingRect.height / 2
+          ) || document.elementFromPoint(boundingRect.left, boundingRect.top);
+
+        if (
+          elementAtPoint === htmlVideo ||
+          (elementAtPoint && htmlVideo.contains(elementAtPoint)) ||
+          (elementAtPoint && elementAtPoint.contains(htmlVideo)) ||
+          !!elementAtPoint?.closest('.html5-video-player')?.contains(htmlVideo) ||
+          !!htmlVideo.closest('#inline-preview-player')?.classList?.contains('playing-mode')
+        ) {
+          logger.log('[AutoContinue] Video is visible');
+          return true;
+        }
       }
 
       if (
@@ -118,10 +101,6 @@ function checkForVideoElement(): boolean {
 }
 
 let autoconfirmScriptInjected = false;
-let cleanupFunctions: (() => void)[] = [];
-
-let isAutoconfirmEnabled = true;
-let idleTimeout = 5000;
 
 function injectAutoconfirmScript(): void {
   try {
@@ -136,7 +115,6 @@ function injectAutoconfirmScript(): void {
       return;
     }
 
-    // Inject the autoconfirm script into the page
     const script = document.createElement('script');
     script.src = chrome.runtime.getURL('js/autoconfirm.js');
     script.onload = () => {
@@ -162,20 +140,6 @@ function injectAutoconfirmScript(): void {
 
 async function initializeExtension(): Promise<void> {
   injectAutoconfirmScript();
-  await loadAutoconfirmSettings();
-
-  setTimeout(() => {
-    const hasVideo = checkForVideoElement();
-    if (hasVideo) {
-      logger.log('[AutoContinue] Video found after delay');
-    } else {
-      logger.log('[AutoContinue] No video found after delay, checking containers...');
-      const containers = document.querySelectorAll(
-        'ytd-player, #movie_player, #player, ytd-watch-flexy, ytd-music-player'
-      );
-      logger.log('[AutoContinue] Found containers:', containers.length);
-    }
-  }, 2000);
 }
 
 if (document.readyState === 'loading') {
@@ -202,27 +166,16 @@ function setupUrlObserver(): void {
   });
 
   urlObserver.observe(document, { subtree: true, childList: true });
-
-  cleanupFunctions.push(() => {
-    if (urlObserver) {
-      urlObserver.disconnect();
-      urlObserver = null;
-    }
-  });
 }
 
 setupUrlObserver();
 
 function cleanup(): void {
   logger.log('[AutoContinue] Cleaning up resources...');
-  cleanupFunctions.forEach(cleanupFn => {
-    try {
-      cleanupFn();
-    } catch (error) {
-      logger.error('[AutoContinue] Error during cleanup:', error);
-    }
-  });
-  cleanupFunctions = [];
+  if (urlObserver) {
+    urlObserver.disconnect();
+    urlObserver = null;
+  }
 }
 
 window.addEventListener('beforeunload', cleanup);
@@ -238,9 +191,6 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     if (changes['idleTimeout']) {
       settings.idleTimeout = changes['idleTimeout'].newValue;
     }
-    if (changes['enableYouTubeMusic']) {
-      settings.enableYouTubeMusic = changes['enableYouTubeMusic'].newValue;
-    }
 
     if (Object.keys(settings).length > 0) {
       const event = new CustomEvent('autocontinue-settings-updated', {
@@ -255,7 +205,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   try {
     if (!isExtensionContextValid()) {
-      console.warn(
+      logger.warn(
         '[AutoContinue] Extension context invalidated, please reload the page to re-enable AutoContinue'
       );
       return false;
@@ -272,7 +222,6 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       }
       case 'toggle':
         logger.log('[AutoContinue] Extension', message.enabled ? 'enabled' : 'disabled');
-        isAutoconfirmEnabled = message.enabled;
         break;
       default:
         logger.warn('[AutoContinue] Unknown message action:', message.action);
@@ -284,7 +233,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       err.message &&
       err.message.includes('Extension context invalidated')
     ) {
-      console.warn(
+      logger.warn(
         '[AutoContinue] Extension context invalidated, please reload the page to re-enable AutoContinue'
       );
     } else {
@@ -293,23 +242,3 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return false;
   }
 });
-
-async function loadAutoconfirmSettings(): Promise<void> {
-  try {
-    if (!chrome || !chrome.storage || !chrome.storage.local) {
-      logger.warn('[AutoContinue] Chrome storage API not available, using defaults');
-      isAutoconfirmEnabled = true;
-      idleTimeout = 5000;
-      return;
-    }
-
-    const result = await chrome.storage.local.get(['enabled', 'idleTimeout']);
-    isAutoconfirmEnabled = result.enabled !== false;
-    idleTimeout = (result.idleTimeout || 5) * 1000;
-    logger.log('[AutoContinue] Settings loaded:', { isAutoconfirmEnabled, idleTimeout });
-  } catch (error) {
-    logger.error('[AutoContinue] Failed to load settings:', error);
-    isAutoconfirmEnabled = true;
-    idleTimeout = 5000;
-  }
-}
