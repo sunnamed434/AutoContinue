@@ -37,9 +37,9 @@
     "url": "https://github.com/sunnamed434/AutoContinue.git"
   },
   "devDependencies": {
-    "@types/chrome": "^0.1.27",
+    "@types/chrome": "^0.1.28",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.10.0",
+    "@types/node": "^24.10.1",
     "@typescript-eslint/eslint-plugin": "^8.46.3",
     "@typescript-eslint/parser": "^8.46.0",
     "copy-webpack-plugin": "^13.0.1",
